@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>세계 도시 랜덤 선택기</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .city-display {
+      font-size: 4rem;
+      font-weight: bold;
+      margin: 40px 0;
+      min-height: 80px;
+      background: linear-gradient(90deg, #e96c6c, #f9ca24, #6c63ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #6c63ff, #e96c6c);
+      color: white;
+      border: none;
+      padding: 16px 48px;
+      font-size: 1.2rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      margin: 10px;
+    }
+
+    .btn:hover { transform: scale(1.05); opacity: 0.9; }
+    .btn:active { transform: scale(0.97); }
+
+    .multi-result {
+      margin-top: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .tag {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 1rem;
+      animation: fadeIn 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌍 세계 도시 랜덤 선택기</h1>
+
+    <div class="city-display" id="cityDisplay">버튼을 눌러보세요</div>
+
+    <div>
+      <button class="btn" onclick="pickOne()">도시 1개 선택</button>
+      <button class="btn" onclick="pickFive()">도시 5개 선택</button>
+    </div>
+
+    <div class="multi-result" id="multiResult"></div>
+  </div>
+
+  <script>
+    const CITIES = [
+      // 아시아
+      "서울","도쿄","베이징","상하이","홍콩","싱가포르","방콕","자카르타",
+      "쿠알라룸푸르","마닐라","하노이","호치민","뭄바이","델리","콜카타",
+      "카라치","다카","콜롬보","카트만두","타슈켄트","알마티",
+      "테헤란","바그다드","리야드","두바이","이스탄불","앙카라","예루살렘",
+      // 유럽
+      "런던","파리","베를린","마드리드","로마","암스테르담","브뤼셀",
+      "빈","취리히","제네바","스톡홀름","오슬로","코펜하겐","헬싱키",
+      "바르샤바","프라하","부다페스트","부쿠레슈티","소피아","아테네",
+      "리스본","더블린","바르셀로나","밀라노","뮌헨","함부르크",
+      // 아메리카
+      "뉴욕","로스앤젤레스","시카고","휴스턴","샌프란시스코","시애틀",
+      "보스턴","워싱턴 D.C.","마이애미","라스베이거스","토론토","밴쿠버",
+      "몬트리올","멕시코시티","상파울루","리우데자네이루","부에노스아이레스",
+      "산티아고","보고타","리마","카라카스","하바나",
+      // 아프리카
+      "카이로","라고스","요하네스버그","케이프타운","나이로비","아디스아바바",
+      "카사블랑카","아크라","다르에스살람","루안다","키가리","아비장",
+      // 오세아니아
+      "시드니","멜버른","브리즈번","퍼스","오클랜드","웰링턴",
+    ];
+
+    function getRandom(n) {
+      const shuffled = [...CITIES].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, n);
+    }
+
+    function pickOne() {
+      document.getElementById('cityDisplay').style.animation = 'none';
+      requestAnimationFrame(() => {
+        document.getElementById('cityDisplay').style.animation = 'fadeIn 0.4s ease';
+        document.getElementById('cityDisplay').textContent = getRandom(1)[0];
+        document.getElementById('multiResult').innerHTML = '';
+      });
+    }
+
+    function pickFive() {
+      document.getElementById('cityDisplay').textContent = '';
+      const cities = getRandom(5);
+      const container = document.getElementById('multiResult');
+      container.innerHTML = cities.map(c => `<div class="tag">${c}</div>`).join('');
+    }
+  </script>
+</body>
+</html>

@@ -9,132 +9,339 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      background: #0f0f1a;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       color: white;
+      overflow: hidden;
+    }
+
+    .stars {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
     }
 
     .container {
+      position: relative;
+      z-index: 1;
       text-align: center;
+      padding: 40px 20px;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 60px;
+    }
+
+    .globe {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: rotate 8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes rotate {
+      0%   { transform: rotateY(0deg); }
+      100% { transform: rotateY(360deg); }
+    }
+
+    .city-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
       padding: 40px;
+      margin: 30px 0;
+      backdrop-filter: blur(10px);
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-      opacity: 0.8;
-    }
-
-    .city-display {
+    .city-name {
       font-size: 4rem;
-      font-weight: bold;
-      margin: 40px 0;
-      min-height: 80px;
-      background: linear-gradient(90deg, #e96c6c, #f9ca24, #6c63ff);
+      font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      animation: fadeIn 0.4s ease;
+      animation: fadeUp 0.5s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+    .city-region {
+      margin-top: 10px;
+      font-size: 1rem;
+      opacity: 0.4;
+      letter-spacing: 2px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .btn {
-      background: linear-gradient(135deg, #6c63ff, #e96c6c);
-      color: white;
-      border: none;
-      padding: 16px 48px;
+    .placeholder {
       font-size: 1.2rem;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: transform 0.2s, opacity 0.2s;
-      margin: 10px;
+      opacity: 0.3;
     }
 
-    .btn:hover { transform: scale(1.05); opacity: 0.9; }
-    .btn:active { transform: scale(0.97); }
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
 
-    .multi-result {
-      margin-top: 40px;
+    .btn {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: white;
+      border: none;
+      padding: 14px 36px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.4); }
+    .btn:active { transform: translateY(0); }
+
+    .btn.secondary {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .btn.secondary:hover { background: rgba(255,255,255,0.15); box-shadow: none; }
+
+    .multi-section { width: 100%; }
+
+    .multi-title {
+      font-size: 0.85rem;
+      opacity: 0.4;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .tags {
       display: flex;
       flex-wrap: wrap;
+      gap: 10px;
       justify-content: center;
-      gap: 12px;
     }
 
     .tag {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 8px 20px;
-      border-radius: 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 10px 22px;
+      border-radius: 50px;
       font-size: 1rem;
-      animation: fadeIn 0.4s ease;
+      animation: fadeUp 0.4s ease both;
     }
+
+    .tag:nth-child(1) { animation-delay: 0.00s; }
+    .tag:nth-child(2) { animation-delay: 0.07s; }
+    .tag:nth-child(3) { animation-delay: 0.14s; }
+    .tag:nth-child(4) { animation-delay: 0.21s; }
+    .tag:nth-child(5) { animation-delay: 0.28s; }
   </style>
 </head>
 <body>
+
+  <div class="stars" id="stars"></div>
+
   <div class="container">
-    <h1>🌍 세계 도시 랜덤 선택기</h1>
+    <div class="title">World City Picker</div>
+    <div class="globe">🌍</div>
 
-    <div class="city-display" id="cityDisplay">버튼을 눌러보세요</div>
-
-    <div>
-      <button class="btn" onclick="pickOne()">도시 1개 선택</button>
-      <button class="btn" onclick="pickFive()">도시 5개 선택</button>
+    <div class="city-box">
+      <div class="placeholder" id="placeholder">버튼을 눌러 도시를 뽑아보세요</div>
+      <div class="city-name" id="cityName" style="display:none"></div>
+      <div class="city-region" id="cityRegion" style="display:none"></div>
     </div>
 
-    <div class="multi-result" id="multiResult"></div>
+    <div class="btn-group">
+      <button class="btn" onclick="pickOne()">🎲 도시 1개 뽑기</button>
+      <button class="btn secondary" onclick="pickFive()">🗺️ 도시 5개 뽑기</button>
+    </div>
+
+    <div class="multi-section" id="multiSection" style="display:none">
+      <div class="multi-title">RANDOM PICKS</div>
+      <div class="tags" id="tags"></div>
+    </div>
   </div>
 
   <script>
     const CITIES = [
-      // 아시아
-      "서울","도쿄","베이징","상하이","홍콩","싱가포르","방콕","자카르타",
-      "쿠알라룸푸르","마닐라","하노이","호치민","뭄바이","델리","콜카타",
-      "카라치","다카","콜롬보","카트만두","타슈켄트","알마티",
-      "테헤란","바그다드","리야드","두바이","이스탄불","앙카라","예루살렘",
-      // 유럽
-      "런던","파리","베를린","마드리드","로마","암스테르담","브뤼셀",
-      "빈","취리히","제네바","스톡홀름","오슬로","코펜하겐","헬싱키",
-      "바르샤바","프라하","부다페스트","부쿠레슈티","소피아","아테네",
-      "리스본","더블린","바르셀로나","밀라노","뮌헨","함부르크",
-      // 아메리카
-      "뉴욕","로스앤젤레스","시카고","휴스턴","샌프란시스코","시애틀",
-      "보스턴","워싱턴 D.C.","마이애미","라스베이거스","토론토","밴쿠버",
-      "몬트리올","멕시코시티","상파울루","리우데자네이루","부에노스아이레스",
-      "산티아고","보고타","리마","카라카스","하바나",
-      // 아프리카
-      "카이로","라고스","요하네스버그","케이프타운","나이로비","아디스아바바",
-      "카사블랑카","아크라","다르에스살람","루안다","키가리","아비장",
-      // 오세아니아
-      "시드니","멜버른","브리즈번","퍼스","오클랜드","웰링턴",
+      { name: "서울",           region: "ASIA" },
+      { name: "도쿄",           region: "ASIA" },
+      { name: "베이징",         region: "ASIA" },
+      { name: "상하이",         region: "ASIA" },
+      { name: "홍콩",           region: "ASIA" },
+      { name: "싱가포르",       region: "ASIA" },
+      { name: "방콕",           region: "ASIA" },
+      { name: "자카르타",       region: "ASIA" },
+      { name: "쿠알라룸푸르",   region: "ASIA" },
+      { name: "마닐라",         region: "ASIA" },
+      { name: "하노이",         region: "ASIA" },
+      { name: "호치민",         region: "ASIA" },
+      { name: "뭄바이",         region: "ASIA" },
+      { name: "델리",           region: "ASIA" },
+      { name: "카라치",         region: "ASIA" },
+      { name: "다카",           region: "ASIA" },
+      { name: "콜롬보",         region: "ASIA" },
+      { name: "카트만두",       region: "ASIA" },
+      { name: "테헤란",         region: "ASIA" },
+      { name: "바그다드",       region: "ASIA" },
+      { name: "리야드",         region: "ASIA" },
+      { name: "두바이",         region: "ASIA" },
+      { name: "이스탄불",       region: "ASIA" },
+      { name: "앙카라",         region: "ASIA" },
+      { name: "예루살렘",       region: "ASIA" },
+      { name: "타슈켄트",       region: "ASIA" },
+      { name: "알마티",         region: "ASIA" },
+      { name: "런던",           region: "EUROPE" },
+      { name: "파리",           region: "EUROPE" },
+      { name: "베를린",         region: "EUROPE" },
+      { name: "마드리드",       region: "EUROPE" },
+      { name: "로마",           region: "EUROPE" },
+      { name: "암스테르담",     region: "EUROPE" },
+      { name: "브뤼셀",         region: "EUROPE" },
+      { name: "빈",             region: "EUROPE" },
+      { name: "취리히",         region: "EUROPE" },
+      { name: "제네바",         region: "EUROPE" },
+      { name: "스톡홀름",       region: "EUROPE" },
+      { name: "오슬로",         region: "EUROPE" },
+      { name: "코펜하겐",       region: "EUROPE" },
+      { name: "헬싱키",         region: "EUROPE" },
+      { name: "바르샤바",       region: "EUROPE" },
+      { name: "프라하",         region: "EUROPE" },
+      { name: "부다페스트",     region: "EUROPE" },
+      { name: "부쿠레슈티",     region: "EUROPE" },
+      { name: "소피아",         region: "EUROPE" },
+      { name: "아테네",         region: "EUROPE" },
+      { name: "리스본",         region: "EUROPE" },
+      { name: "더블린",         region: "EUROPE" },
+      { name: "바르셀로나",     region: "EUROPE" },
+      { name: "밀라노",         region: "EUROPE" },
+      { name: "뮌헨",           region: "EUROPE" },
+      { name: "함부르크",       region: "EUROPE" },
+      { name: "뉴욕",           region: "AMERICAS" },
+      { name: "로스앤젤레스",   region: "AMERICAS" },
+      { name: "시카고",         region: "AMERICAS" },
+      { name: "휴스턴",         region: "AMERICAS" },
+      { name: "샌프란시스코",   region: "AMERICAS" },
+      { name: "시애틀",         region: "AMERICAS" },
+      { name: "보스턴",         region: "AMERICAS" },
+      { name: "워싱턴 D.C.",    region: "AMERICAS" },
+      { name: "마이애미",       region: "AMERICAS" },
+      { name: "라스베이거스",   region: "AMERICAS" },
+      { name: "토론토",         region: "AMERICAS" },
+      { name: "밴쿠버",         region: "AMERICAS" },
+      { name: "몬트리올",       region: "AMERICAS" },
+      { name: "멕시코시티",     region: "AMERICAS" },
+      { name: "상파울루",       region: "AMERICAS" },
+      { name: "리우데자네이루", region: "AMERICAS" },
+      { name: "부에노스아이레스",region:"AMERICAS" },
+      { name: "산티아고",       region: "AMERICAS" },
+      { name: "보고타",         region: "AMERICAS" },
+      { name: "리마",           region: "AMERICAS" },
+      { name: "카라카스",       region: "AMERICAS" },
+      { name: "하바나",         region: "AMERICAS" },
+      { name: "카이로",         region: "AFRICA" },
+      { name: "라고스",         region: "AFRICA" },
+      { name: "요하네스버그",   region: "AFRICA" },
+      { name: "케이프타운",     region: "AFRICA" },
+      { name: "나이로비",       region: "AFRICA" },
+      { name: "아디스아바바",   region: "AFRICA" },
+      { name: "카사블랑카",     region: "AFRICA" },
+      { name: "아크라",         region: "AFRICA" },
+      { name: "다르에스살람",   region: "AFRICA" },
+      { name: "루안다",         region: "AFRICA" },
+      { name: "키가리",         region: "AFRICA" },
+      { name: "아비장",         region: "AFRICA" },
+      { name: "시드니",         region: "OCEANIA" },
+      { name: "멜버른",         region: "OCEANIA" },
+      { name: "브리즈번",       region: "OCEANIA" },
+      { name: "퍼스",           region: "OCEANIA" },
+      { name: "오클랜드",       region: "OCEANIA" },
+      { name: "웰링턴",         region: "OCEANIA" },
     ];
 
     function getRandom(n) {
-      const shuffled = [...CITIES].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, n);
+      return [...CITIES].sort(() => Math.random() - 0.5).slice(0, n);
     }
 
     function pickOne() {
-      document.getElementById('cityDisplay').style.animation = 'none';
+      const city = getRandom(1)[0];
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('multiSection').style.display = 'none';
+
+      const nameEl = document.getElementById('cityName');
+      const regionEl = document.getElementById('cityRegion');
+      nameEl.style.display = 'none';
+      regionEl.style.display = 'none';
+
       requestAnimationFrame(() => {
-        document.getElementById('cityDisplay').style.animation = 'fadeIn 0.4s ease';
-        document.getElementById('cityDisplay').textContent = getRandom(1)[0];
-        document.getElementById('multiResult').innerHTML = '';
+        nameEl.textContent = city.name;
+        regionEl.textContent = city.region;
+        nameEl.style.display = '';
+        regionEl.style.display = '';
       });
     }
 
     function pickFive() {
-      document.getElementById('cityDisplay').textContent = '';
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('cityName').style.display = 'none';
+      document.getElementById('cityRegion').style.display = 'none';
+
       const cities = getRandom(5);
-      const container = document.getElementById('multiResult');
-      container.innerHTML = cities.map(c => `<div class="tag">${c}</div>`).join('');
+      const tagsEl = document.getElementById('tags');
+      tagsEl.innerHTML = cities.map(c =>
+        `<div class="tag">${c.name} <span style="opacity:0.4;font-size:0.75rem">${c.region}</span></div>`
+      ).join('');
+      document.getElementById('multiSection').style.display = 'block';
+    }
+
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 80; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      star.style.animationDuration = (2 + Math.random() * 3) + 's';
+      starsEl.appendChild(star);
     }
   </script>
 </body>

@@ -46,9 +46,9 @@
       position: relative;
       z-index: 1;
       text-align: center;
-      padding: 40px 20px;
+      padding: 40px 20px 60px;
       width: 100%;
-      max-width: 750px;
+      max-width: 780px;
     }
 
     .title {
@@ -143,7 +143,7 @@
 
     #map {
       width: 100%;
-      height: 380px;
+      height: 360px;
       border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.1);
       margin-top: 10px;
@@ -151,7 +151,78 @@
       animation: fadeUp 0.5s ease;
     }
 
-    .multi-section { width: 100%; margin-top: 10px; }
+    .info-card {
+      display: none;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 28px;
+      margin-top: 16px;
+      text-align: left;
+      animation: fadeUp 0.5s ease;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 16px 20px;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      opacity: 0.4;
+      margin-bottom: 6px;
+    }
+
+    .info-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+
+    .info-intro {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      opacity: 0.75;
+      margin-bottom: 20px;
+      padding: 0 4px;
+    }
+
+    .spots-title {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      opacity: 0.4;
+      margin-bottom: 12px;
+    }
+
+    .spots-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .spot {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spot-icon { font-size: 1.1rem; }
+
+    .multi-section { width: 100%; margin-top: 16px; }
 
     .multi-title {
       font-size: 0.85rem;
@@ -185,6 +256,11 @@
     .tag:nth-child(3) { animation-delay: 0.14s; }
     .tag:nth-child(4) { animation-delay: 0.21s; }
     .tag:nth-child(5) { animation-delay: 0.28s; }
+
+    @media (max-width: 480px) {
+      .info-grid, .spots-grid { grid-template-columns: 1fr; }
+      .city-name { font-size: 2.8rem; }
+    }
   </style>
 </head>
 <body>
@@ -208,6 +284,22 @@
 
     <div id="map"></div>
 
+    <div class="info-card" id="infoCard">
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">✈️ 한국에서 비행시간</div>
+          <div class="info-value" id="infoFlight"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">🕐 한국과의 시차</div>
+          <div class="info-value" id="infoTimeDiff"></div>
+        </div>
+      </div>
+      <div class="info-intro" id="infoIntro"></div>
+      <div class="spots-title">📍 주요 관광지</div>
+      <div class="spots-grid" id="spotsGrid"></div>
+    </div>
+
     <div class="multi-section" id="multiSection" style="display:none">
       <div class="multi-title">RANDOM PICKS — 클릭하면 지도에서 확인</div>
       <div class="tags" id="tags"></div>
@@ -216,111 +308,125 @@
 
   <script>
     const CITIES = [
-      { name: "서울",             region: "ASIA",     lat: 37.5665,  lng: 126.9780 },
-      { name: "수원",             region: "ASIA",     lat: 37.2636,  lng: 127.0286 },
-      { name: "도쿄",             region: "ASIA",     lat: 35.6762,  lng: 139.6503 },
-      { name: "베이징",           region: "ASIA",     lat: 39.9042,  lng: 116.4074 },
-      { name: "상하이",           region: "ASIA",     lat: 31.2304,  lng: 121.4737 },
-      { name: "홍콩",             region: "ASIA",     lat: 22.3193,  lng: 114.1694 },
-      { name: "싱가포르",         region: "ASIA",     lat: 1.3521,   lng: 103.8198 },
-      { name: "방콕",             region: "ASIA",     lat: 13.7563,  lng: 100.5018 },
-      { name: "자카르타",         region: "ASIA",     lat: -6.2088,  lng: 106.8456 },
-      { name: "쿠알라룸푸르",     region: "ASIA",     lat: 3.1390,   lng: 101.6869 },
-      { name: "마닐라",           region: "ASIA",     lat: 14.5995,  lng: 120.9842 },
-      { name: "하노이",           region: "ASIA",     lat: 21.0285,  lng: 105.8542 },
-      { name: "호치민",           region: "ASIA",     lat: 10.8231,  lng: 106.6297 },
-      { name: "뭄바이",           region: "ASIA",     lat: 19.0760,  lng: 72.8777  },
-      { name: "델리",             region: "ASIA",     lat: 28.6139,  lng: 77.2090  },
-      { name: "카라치",           region: "ASIA",     lat: 24.8607,  lng: 67.0011  },
-      { name: "다카",             region: "ASIA",     lat: 23.8103,  lng: 90.4125  },
-      { name: "콜롬보",           region: "ASIA",     lat: 6.9271,   lng: 79.8612  },
-      { name: "카트만두",         region: "ASIA",     lat: 27.7172,  lng: 85.3240  },
-      { name: "테헤란",           region: "ASIA",     lat: 35.6892,  lng: 51.3890  },
-      { name: "바그다드",         region: "ASIA",     lat: 33.3152,  lng: 44.3661  },
-      { name: "리야드",           region: "ASIA",     lat: 24.7136,  lng: 46.6753  },
-      { name: "두바이",           region: "ASIA",     lat: 25.2048,  lng: 55.2708  },
-      { name: "이스탄불",         region: "ASIA",     lat: 41.0082,  lng: 28.9784  },
-      { name: "앙카라",           region: "ASIA",     lat: 39.9334,  lng: 32.8597  },
-      { name: "예루살렘",         region: "ASIA",     lat: 31.7683,  lng: 35.2137  },
-      { name: "타슈켄트",         region: "ASIA",     lat: 41.2995,  lng: 69.2401  },
-      { name: "알마티",           region: "ASIA",     lat: 43.2220,  lng: 76.8512  },
-      { name: "런던",             region: "EUROPE",   lat: 51.5074,  lng: -0.1278  },
-      { name: "파리",             region: "EUROPE",   lat: 48.8566,  lng: 2.3522   },
-      { name: "베를린",           region: "EUROPE",   lat: 52.5200,  lng: 13.4050  },
-      { name: "마드리드",         region: "EUROPE",   lat: 40.4168,  lng: -3.7038  },
-      { name: "로마",             region: "EUROPE",   lat: 41.9028,  lng: 12.4964  },
-      { name: "암스테르담",       region: "EUROPE",   lat: 52.3676,  lng: 4.9041   },
-      { name: "브뤼셀",           region: "EUROPE",   lat: 50.8503,  lng: 4.3517   },
-      { name: "빈",               region: "EUROPE",   lat: 48.2082,  lng: 16.3738  },
-      { name: "취리히",           region: "EUROPE",   lat: 47.3769,  lng: 8.5417   },
-      { name: "제네바",           region: "EUROPE",   lat: 46.2044,  lng: 6.1432   },
-      { name: "스톡홀름",         region: "EUROPE",   lat: 59.3293,  lng: 18.0686  },
-      { name: "오슬로",           region: "EUROPE",   lat: 59.9139,  lng: 10.7522  },
-      { name: "코펜하겐",         region: "EUROPE",   lat: 55.6761,  lng: 12.5683  },
-      { name: "헬싱키",           region: "EUROPE",   lat: 60.1699,  lng: 24.9384  },
-      { name: "바르샤바",         region: "EUROPE",   lat: 52.2297,  lng: 21.0122  },
-      { name: "프라하",           region: "EUROPE",   lat: 50.0755,  lng: 14.4378  },
-      { name: "부다페스트",       region: "EUROPE",   lat: 47.4979,  lng: 19.0402  },
-      { name: "부쿠레슈티",       region: "EUROPE",   lat: 44.4268,  lng: 26.1025  },
-      { name: "소피아",           region: "EUROPE",   lat: 42.6977,  lng: 23.3219  },
-      { name: "아테네",           region: "EUROPE",   lat: 37.9838,  lng: 23.7275  },
-      { name: "리스본",           region: "EUROPE",   lat: 38.7223,  lng: -9.1393  },
-      { name: "더블린",           region: "EUROPE",   lat: 53.3498,  lng: -6.2603  },
-      { name: "바르셀로나",       region: "EUROPE",   lat: 41.3851,  lng: 2.1734   },
-      { name: "밀라노",           region: "EUROPE",   lat: 45.4654,  lng: 9.1859   },
-      { name: "뮌헨",             region: "EUROPE",   lat: 48.1351,  lng: 11.5820  },
-      { name: "함부르크",         region: "EUROPE",   lat: 53.5511,  lng: 9.9937   },
-      { name: "뉴욕",             region: "AMERICAS", lat: 40.7128,  lng: -74.0060 },
-      { name: "로스앤젤레스",     region: "AMERICAS", lat: 34.0522,  lng: -118.2437},
-      { name: "시카고",           region: "AMERICAS", lat: 41.8781,  lng: -87.6298 },
-      { name: "휴스턴",           region: "AMERICAS", lat: 29.7604,  lng: -95.3698 },
-      { name: "샌프란시스코",     region: "AMERICAS", lat: 37.7749,  lng: -122.4194},
-      { name: "시애틀",           region: "AMERICAS", lat: 47.6062,  lng: -122.3321},
-      { name: "보스턴",           region: "AMERICAS", lat: 42.3601,  lng: -71.0589 },
-      { name: "워싱턴 D.C.",      region: "AMERICAS", lat: 38.9072,  lng: -77.0369 },
-      { name: "마이애미",         region: "AMERICAS", lat: 25.7617,  lng: -80.1918 },
-      { name: "라스베이거스",     region: "AMERICAS", lat: 36.1699,  lng: -115.1398},
-      { name: "오클라호마시티",   region: "AMERICAS", lat: 35.4676,  lng: -97.5164 },
-      { name: "에드몬드",         region: "AMERICAS", lat: 35.6528,  lng: -97.4781 },
-      { name: "토론토",           region: "AMERICAS", lat: 43.6510,  lng: -79.3470 },
-      { name: "밴쿠버",           region: "AMERICAS", lat: 49.2827,  lng: -123.1207},
-      { name: "몬트리올",         region: "AMERICAS", lat: 45.5017,  lng: -73.5673 },
-      { name: "멕시코시티",       region: "AMERICAS", lat: 19.4326,  lng: -99.1332 },
-      { name: "상파울루",         region: "AMERICAS", lat: -23.5505, lng: -46.6333 },
-      { name: "리우데자네이루",   region: "AMERICAS", lat: -22.9068, lng: -43.1729 },
-      { name: "부에노스아이레스", region: "AMERICAS", lat: -34.6037, lng: -58.3816 },
-      { name: "산티아고",         region: "AMERICAS", lat: -33.4489, lng: -70.6693 },
-      { name: "보고타",           region: "AMERICAS", lat: 4.7110,   lng: -74.0721 },
-      { name: "리마",             region: "AMERICAS", lat: -12.0464, lng: -77.0428 },
-      { name: "카라카스",         region: "AMERICAS", lat: 10.4806,  lng: -66.9036 },
-      { name: "하바나",           region: "AMERICAS", lat: 23.1136,  lng: -82.3666 },
-      { name: "카이로",           region: "AFRICA",   lat: 30.0444,  lng: 31.2357  },
-      { name: "라고스",           region: "AFRICA",   lat: 6.5244,   lng: 3.3792   },
-      { name: "요하네스버그",     region: "AFRICA",   lat: -26.2041, lng: 28.0473  },
-      { name: "케이프타운",       region: "AFRICA",   lat: -33.9249, lng: 18.4241  },
-      { name: "나이로비",         region: "AFRICA",   lat: -1.2921,  lng: 36.8219  },
-      { name: "아디스아바바",     region: "AFRICA",   lat: 9.0320,   lng: 38.7469  },
-      { name: "카사블랑카",       region: "AFRICA",   lat: 33.5731,  lng: -7.5898  },
-      { name: "아크라",           region: "AFRICA",   lat: 5.6037,   lng: -0.1870  },
-      { name: "다르에스살람",     region: "AFRICA",   lat: -6.7924,  lng: 39.2083  },
-      { name: "루안다",           region: "AFRICA",   lat: -8.8390,  lng: 13.2894  },
-      { name: "키가리",           region: "AFRICA",   lat: -1.9441,  lng: 30.0619  },
-      { name: "아비장",           region: "AFRICA",   lat: 5.3600,   lng: -4.0083  },
-      { name: "시드니",           region: "OCEANIA",  lat: -33.8688, lng: 151.2093 },
-      { name: "멜버른",           region: "OCEANIA",  lat: -37.8136, lng: 144.9631 },
-      { name: "브리즈번",         region: "OCEANIA",  lat: -27.4698, lng: 153.0251 },
-      { name: "퍼스",             region: "OCEANIA",  lat: -31.9505, lng: 115.8605 },
-      { name: "오클랜드",         region: "OCEANIA",  lat: -36.8509, lng: 174.7645 },
-      { name: "웰링턴",           region: "OCEANIA",  lat: -41.2866, lng: 174.7756 },
+      { name:"서울", region:"ASIA", lat:37.5665, lng:126.9780, flight:"국내", timeDiff:"없음", intro:"대한민국의 수도이자 약 1,000만 명이 거주하는 동아시아의 대표 메트로폴리스. 고궁과 첨단 도시가 공존하는 독특한 매력을 가진 도시입니다.", spots:["경복궁","남산서울타워","명동","북촌한옥마을"] },
+      { name:"수원", region:"ASIA", lat:37.2636, lng:127.0286, flight:"국내", timeDiff:"없음", intro:"유네스코 세계문화유산 수원화성으로 유명한 경기도의 대표 도시. 조선시대 성곽 건축의 걸작을 직접 볼 수 있습니다.", spots:["수원화성","화성행궁","광교호수공원","수원전통시장"] },
+      { name:"도쿄", region:"ASIA", lat:35.6762, lng:139.6503, flight:"약 2시간 30분", timeDiff:"없음 (동일)", intro:"일본의 수도이자 세계 최대 규모의 도시 중 하나. 전통과 현대가 절묘하게 어우러진 독보적인 도시 문화를 자랑합니다.", spots:["아사쿠사 센소지","시부야 스크램블교차로","신주쿠 교엔","도쿄 스카이트리"] },
+      { name:"베이징", region:"ASIA", lat:39.9042, lng:116.4074, flight:"약 2시간", timeDiff:"-1시간", intro:"3,000년 역사를 지닌 중국의 수도. 수많은 왕조의 흔적이 곳곳에 남아 있으며 유네스코 세계유산이 집중되어 있습니다.", spots:["자금성 (고궁)","만리장성","천안문 광장","이화원"] },
+      { name:"상하이", region:"ASIA", lat:31.2304, lng:121.4737, flight:"약 2시간", timeDiff:"-1시간", intro:"중국 최대의 경제 도시로, 황푸강을 사이에 두고 고전적인 와이탄과 현대적인 푸둥이 극적인 대비를 이룹니다.", spots:["와이탄","동방명주 TV타워","예원","상하이 디즈니랜드"] },
+      { name:"홍콩", region:"ASIA", lat:22.3193, lng:114.1694, flight:"약 3시간 30분", timeDiff:"-1시간", intro:"동서양 문화가 융합된 국제 금융 도시. 세계 최고 수준의 야경과 딤섬을 비롯한 광둥 요리로 유명합니다.", spots:["빅토리아 피크","템플 스트리트 야시장","란타우섬 천단대불","스타의 거리"] },
+      { name:"싱가포르", region:"ASIA", lat:1.3521, lng:103.8198, flight:"약 6시간 30분", timeDiff:"-1시간", intro:"아시아의 허브 도시국가로 청결함과 다문화 공존으로 유명합니다. 마리나 베이 샌즈는 세계적인 랜드마크입니다.", spots:["마리나 베이 샌즈","가든스 바이 더 베이","센토사 섬","차이나타운"] },
+      { name:"방콕", region:"ASIA", lat:13.7563, lng:100.5018, flight:"약 5시간 30분", timeDiff:"-2시간", intro:"태국의 활기찬 수도로 화려한 불교 사원과 길거리 음식 문화, 야시장으로 전 세계 여행자를 매혹합니다.", spots:["왓 프라깨우 (에메랄드 사원)","왓 아룬","짜뚜짝 주말시장","카오산 로드"] },
+      { name:"자카르타", region:"ASIA", lat:-6.2088, lng:106.8456, flight:"약 7시간", timeDiff:"-2시간", intro:"인도네시아의 수도이자 동남아시아 최대 도시 중 하나. 다양한 문화와 음식, 현대적인 쇼핑몰이 공존합니다.", spots:["국립기념탑 (모나스)","이스티클랄 모스크","코타 투아 (구시가지)","안쫄 드림랜드"] },
+      { name:"쿠알라룸푸르", region:"ASIA", lat:3.1390, lng:101.6869, flight:"약 6시간 30분", timeDiff:"-1시간", intro:"말레이시아의 수도로 세계에서 가장 높은 쌍둥이 빌딩 페트로나스 타워가 상징입니다. 다민족 문화가 어우러진 매력적인 도시입니다.", spots:["페트로나스 트윈 타워","바투 동굴","차이나타운 (페탈링 스트리트)","KL 버드 파크"] },
+      { name:"마닐라", region:"ASIA", lat:14.5995, lng:120.9842, flight:"약 4시간", timeDiff:"-1시간", intro:"필리핀의 수도. 스페인 식민지 시대의 유산 인트라무로스와 활기찬 현대 도시의 모습이 공존합니다.", spots:["인트라무로스","리살 공원","마닐라 오션 파크","BGC 아트 센터"] },
+      { name:"하노이", region:"ASIA", lat:21.0285, lng:105.8542, flight:"약 5시간", timeDiff:"-2시간", intro:"베트남의 수도로 1,000년 역사를 간직한 도시. 프랑스 식민지 시대의 건축물과 올드쿼터가 독특한 분위기를 자아냅니다.", spots:["호안끼엠 호수","호치민 묘소","올드쿼터 36거리","문묘"] },
+      { name:"호치민", region:"ASIA", lat:10.8231, lng:106.6297, flight:"약 5시간 30분", timeDiff:"-2시간", intro:"베트남 최대의 경제 도시(구 사이공). 에너지 넘치는 오토바이 물결과 프랑스 식민지 시대의 건축물이 공존합니다.", spots:["전쟁박물관","통일궁","벤탄 시장","노트르담 대성당"] },
+      { name:"뭄바이", region:"ASIA", lat:19.0760, lng:72.8777, flight:"약 9시간", timeDiff:"-3시간 30분", intro:"인도의 경제 수도이자 볼리우드 영화산업의 본거지. 아라비아해를 끼고 있으며 인도 최대의 상업·금융 중심지입니다.", spots:["인도의 관문","차트라파티 시바지 터미널","마린 드라이브","엘레판타 동굴"] },
+      { name:"델리", region:"ASIA", lat:28.6139, lng:77.2090, flight:"약 8시간", timeDiff:"-3시간 30분", intro:"인도의 수도. 무굴 제국의 유산인 올드델리와 영국 식민지 시대에 건설된 뉴델리가 공존하는 역사의 도시입니다.", spots:["레드포트","꾸뜹 미나르","인디아 게이트","후마윤 묘"] },
+      { name:"카라치", region:"ASIA", lat:24.8607, lng:67.0011, flight:"약 8시간", timeDiff:"-4시간", intro:"파키스탄 최대의 도시이자 경제 수도. 아라비아해에 접한 항구도시로 다양한 문화와 역사가 혼재합니다.", spots:["모하타 궁전","클리프턴 비치","콰이드 묘소","에머슨 시장"] },
+      { name:"다카", region:"ASIA", lat:23.8103, lng:90.4125, flight:"약 5시간", timeDiff:"-3시간", intro:"방글라데시의 수도로 세계에서 가장 인구밀도가 높은 도시 중 하나. 생동감 넘치는 시장과 무굴 시대의 유적이 가득합니다.", spots:["라르바그 요새","아흐산 만질 궁전","꾸뚜브 모스크","사다르가트 강변"] },
+      { name:"콜롬보", region:"ASIA", lat:6.9271, lng:79.8612, flight:"약 8시간", timeDiff:"-3시간 30분", intro:"스리랑카의 최대 도시이자 상업 수도. 인도양에 접해 있으며 네덜란드·영국 식민지 시대의 흔적이 남아 있습니다.", spots:["갈레 페이스 그린","독립 기념관","비라마데비 공원","콜롬보 국립박물관"] },
+      { name:"카트만두", region:"ASIA", lat:27.7172, lng:85.3240, flight:"약 6시간", timeDiff:"-3시간 15분", intro:"네팔의 수도로 히말라야 산맥의 관문 도시. 힌두교와 불교 문화가 융합된 독특한 유네스코 세계유산 지구가 있습니다.", spots:["파슈파티나트 사원","보드나트 스투파","스와얌부나트 (원숭이 사원)","파탄 더르바르 광장"] },
+      { name:"테헤란", region:"ASIA", lat:35.6892, lng:51.3890, flight:"약 10시간", timeDiff:"-5시간 30분", intro:"이란의 수도로 알보르즈 산맥을 배경으로 한 대도시. 페르시아 문명의 유산과 현대적인 도시 생활이 공존합니다.", spots:["골레스탄 궁전","이란 국립박물관","그랜드 바자르","밀라드 타워"] },
+      { name:"바그다드", region:"ASIA", lat:33.3152, lng:44.3661, flight:"약 10시간", timeDiff:"-6시간", intro:"이라크의 수도이자 고대 아바스 칼리파 제국의 중심지. 메소포타미아 문명의 발상지로 풍부한 역사적 유산을 품고 있습니다.", spots:["이라크 국립박물관","알-무스탄시리야 학교","카디마인 성지","바그다드 현대미술관"] },
+      { name:"리야드", region:"ASIA", lat:24.7136, lng:46.6753, flight:"약 10시간", timeDiff:"-6시간", intro:"사우디아라비아의 수도이자 아라비아 반도 최대의 도시. 급속도로 현대화되고 있으며 전통 아랍 문화와 첨단 건축이 어우러집니다.", spots:["마스마크 요새","킹덤 센터 타워","디리야 유네스코 유산지구","국립박물관"] },
+      { name:"두바이", region:"ASIA", lat:25.2048, lng:55.2708, flight:"약 9시간", timeDiff:"-5시간", intro:"아랍에미리트의 경제 수도. 세계 최고층 빌딩 부르즈 할리파와 인공섬 팜 주메이라로 상징되는 초현대적인 도시입니다.", spots:["부르즈 할리파","팜 주메이라","두바이 몰","골드 수크"] },
+      { name:"이스탄불", region:"ASIA", lat:41.0082, lng:28.9784, flight:"약 11시간", timeDiff:"-6시간", intro:"유럽과 아시아에 걸쳐 있는 세계 유일의 도시. 동서양 문명이 교차하는 역사적 중심지로 수천 년의 역사가 층층이 쌓여 있습니다.", spots:["아야 소피아","블루 모스크","그랜드 바자르","보스포루스 해협"] },
+      { name:"앙카라", region:"ASIA", lat:39.9334, lng:32.8597, flight:"약 11시간", timeDiff:"-6시간", intro:"터키의 수도로 아나톨리아 고원 중심부에 위치합니다. 히타이트 문명부터 오스만 제국까지 다양한 역사 유적을 품고 있습니다.", spots:["아타튀르크 묘소","아나톨리아 문명 박물관","앙카라 성채","겐츠리크 공원"] },
+      { name:"예루살렘", region:"ASIA", lat:31.7683, lng:35.2137, flight:"약 12시간", timeDiff:"-7시간", intro:"유대교, 기독교, 이슬람교 모두에게 성스러운 도시. 수천 년에 걸쳐 수많은 문명이 지나간 세계에서 가장 역사적인 도시입니다.", spots:["통곡의 벽","성묘 교회","바위의 돔","비아 돌로로사"] },
+      { name:"타슈켄트", region:"ASIA", lat:41.2995, lng:69.2401, flight:"약 7시간", timeDiff:"-4시간", intro:"우즈베키스탄의 수도이자 중앙아시아 최대 도시. 실크로드의 주요 거점으로 이슬람 건축의 보고입니다.", spots:["초르수 바자르","하스트 이맘 광장","티무르 역사박물관","타슈켄트 TV 타워"] },
+      { name:"알마티", region:"ASIA", lat:43.2220, lng:76.8512, flight:"약 6시간", timeDiff:"-3시간", intro:"카자흐스탄 최대 도시로 톈산 산맥 기슭에 위치합니다. 구소련 시대의 건축물과 현대적 인프라가 공존하는 중앙아시아의 허브입니다.", spots:["빅 알마티 호수","젠코프 대성당","중앙 시장","코크 토베 언덕"] },
+
+      { name:"런던", region:"EUROPE", lat:51.5074, lng:-0.1278, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -9시간)", intro:"영국의 수도이자 세계 금융의 중심지. 2,000년 역사의 도시로 왕실 문화와 세계 최고 수준의 박물관이 모두 무료로 개방됩니다.", spots:["대영박물관","버킹엄 궁전","타워 오브 런던","빅벤 & 웨스트민스터"] },
+      { name:"파리", region:"EUROPE", lat:48.8566, lng:2.3522, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"'빛의 도시'라 불리는 프랑스의 수도. 예술, 패션, 미식의 세계적 중심지로 에펠탑은 세계에서 가장 많이 방문하는 랜드마크입니다.", spots:["에펠탑","루브르 박물관","베르사유 궁전","몽마르트르 언덕"] },
+      { name:"베를린", region:"EUROPE", lat:52.5200, lng:13.4050, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"독일의 수도로 분단과 통일의 역사를 고스란히 간직한 도시. 역동적인 예술·음악 씬과 풍부한 역사 유적이 공존합니다.", spots:["브란덴부르크 문","베를린 장벽","페르가몬 박물관","포츠담 광장"] },
+      { name:"마드리드", region:"EUROPE", lat:40.4168, lng:-3.7038, flight:"약 13시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"스페인의 수도이자 유럽 중심부에 위치한 활기찬 도시. 세계 3대 미술관 중 하나인 프라도 미술관과 열정적인 플라멩코 문화로 유명합니다.", spots:["프라도 미술관","레티로 공원","마요르 광장","소피아 왕비 예술센터"] },
+      { name:"로마", region:"EUROPE", lat:41.9028, lng:12.4964, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"'영원의 도시'라 불리는 이탈리아의 수도. 2,800년 역사를 지닌 도시로 걷는 곳마다 유네스코 세계유산을 만날 수 있습니다.", spots:["콜로세움","바티칸 & 성 베드로 대성당","트레비 분수","판테온"] },
+      { name:"암스테르담", region:"EUROPE", lat:52.3676, lng:4.9041, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"네덜란드의 수도로 165개의 운하가 도시를 가로지릅니다. 렘브란트와 반 고흐의 도시이며 자유롭고 관용적인 문화로 유명합니다.", spots:["안네 프랑크 하우스","반 고흐 박물관","렘브란트 광장","케우켄호프 튤립 공원"] },
+      { name:"브뤼셀", region:"EUROPE", lat:50.8503, lng:4.3517, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"벨기에의 수도이자 EU 본부가 위치한 유럽의 심장부. 세계 최고의 맥주와 초콜릿, 와플로도 유명합니다.", spots:["그랑 플라스","아토미움","만네켄 피스","코믹 아트 박물관"] },
+      { name:"빈", region:"EUROPE", lat:48.2082, lng:16.3738, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"오스트리아의 수도이자 합스부르크 왕가의 도시. 모차르트와 베토벤이 활동했던 클래식 음악의 세계 수도로 불립니다.", spots:["쇤브룬 궁전","슈테판 대성당","미술사 박물관","비엔나 국립오페라"] },
+      { name:"취리히", region:"EUROPE", lat:47.3769, lng:8.5417, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"스위스 최대 도시이자 세계 금융 중심지. 알프스와 취리히 호수가 어우러진 아름다운 자연환경 속에 높은 생활 수준을 자랑합니다.", spots:["반호프슈트라세","취리히 호수","구시가지 (알트슈타트)","취리히 미술관"] },
+      { name:"제네바", region:"EUROPE", lat:46.2044, lng:6.1432, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"스위스 제2의 도시로 UN 유럽본부와 적십자 등 국제기구가 밀집한 외교 도시. 레만 호수의 제트 분수가 상징입니다.", spots:["레만 호수 제트 분수","팔레 데 나시옹 (UN 유럽본부)","구시가지","자연사 박물관"] },
+      { name:"스톡홀름", region:"EUROPE", lat:59.3293, lng:18.0686, flight:"약 10시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"스웨덴의 수도로 14개의 섬으로 이루어진 물의 도시. '북유럽의 베니스'로 불리며 노벨상 시상식이 열리는 곳입니다.", spots:["감라스탄 구시가지","바사 박물관","스카이뷰 전망대","드로트닝홀름 왕궁"] },
+      { name:"오슬로", region:"EUROPE", lat:59.9139, lng:10.7522, flight:"약 10시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"노르웨이의 수도로 오슬로 피오르를 끼고 있는 아름다운 항구도시. 뭉크의 《절규》 원작과 세계 최고 수준의 복지를 자랑합니다.", spots:["비겔란 조각 공원","뭉크 박물관","노르웨이 민속 박물관","아케르스후스 요새"] },
+      { name:"코펜하겐", region:"EUROPE", lat:55.6761, lng:12.5683, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"덴마크의 수도이자 안데르센 동화의 도시. 세계에서 가장 살기 좋은 도시 중 하나로 지속 가능한 도시 모델로 주목받고 있습니다.", spots:["인어공주 동상","티볼리 공원","뉘하운 운하","크리스티안스보 궁전"] },
+      { name:"헬싱키", region:"EUROPE", lat:60.1699, lng:24.9384, flight:"약 9시간", timeDiff:"-7시간 (서머타임 -6시간)", intro:"핀란드의 수도로 발트해에 면한 항구도시. '북유럽 디자인의 수도'로 불리며 사우나 문화와 오로라 관광의 출발지입니다.", spots:["헬싱키 대성당","수오멘린나 해상요새","에스플라나디 공원","사우나 체험"] },
+      { name:"바르샤바", region:"EUROPE", lat:52.2297, lng:21.0122, flight:"약 10시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"폴란드의 수도로 2차 세계대전의 상처를 딛고 완전히 재건된 도시. 쇼팽의 고향이며 유네스코 세계유산으로 등재된 구시가지가 있습니다.", spots:["바르샤바 구시가지 광장","바르샤바 봉기 박물관","라지엔키 공원","쇼팽 박물관"] },
+      { name:"프라하", region:"EUROPE", lat:50.0755, lng:14.4378, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"체코의 수도이자 '동유럽의 파리'로 불리는 도시. 중세 고딕 건축이 완벽하게 보존되어 있으며 블타바강 위의 카를교가 상징입니다.", spots:["프라하 성","카를교","구시가지 광장 & 천문시계","바츨라프 광장"] },
+      { name:"부다페스트", region:"EUROPE", lat:47.4979, lng:19.0402, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"헝가리의 수도로 다뉴브강을 사이에 두고 부다와 페스트가 합쳐진 도시. 온천 문화와 화려한 야경으로 '다뉴브의 진주'라 불립니다.", spots:["부다 성","어부의 요새","국회의사당","세체니 온천"] },
+      { name:"부쿠레슈티", region:"EUROPE", lat:44.4268, lng:26.1025, flight:"약 11시간", timeDiff:"-7시간 (서머타임 -6시간)", intro:"루마니아의 수도로 과거 '동유럽의 파리'로 불렸습니다. 차우셰스쿠 시대의 거대 건축물과 아름다운 구시가지가 공존합니다.", spots:["국회궁전","구시가지 (리피카누 베키)","헤러스터우 공원","빌라 미오비차"] },
+      { name:"소피아", region:"EUROPE", lat:42.6977, lng:23.3219, flight:"약 11시간", timeDiff:"-7시간 (서머타임 -6시간)", intro:"불가리아의 수도로 발칸 반도에서 가장 오래된 도시 중 하나. 비토샤 산을 배경으로 한 아름다운 도시이며 물가가 저렴합니다.", spots:["알렉산더 네프스키 대성당","국립역사박물관","보야나 교회","비토샤 산"] },
+      { name:"아테네", region:"EUROPE", lat:37.9838, lng:23.7275, flight:"약 11시간", timeDiff:"-7시간 (서머타임 -6시간)", intro:"서양 문명의 발상지이자 그리스의 수도. 아크로폴리스와 파르테논 신전이 도시를 내려다보며 2,500년 역사가 살아 숨 쉽니다.", spots:["아크로폴리스 & 파르테논 신전","아크로폴리스 박물관","플라카 구시가지","국립 고고학 박물관"] },
+      { name:"리스본", region:"EUROPE", lat:38.7223, lng:-9.1393, flight:"약 14시간", timeDiff:"-9시간 (서머타임 -8시간)", intro:"포르투갈의 수도이자 대항해 시대의 출발지. 7개의 언덕 위에 세워진 도시로 노란 트램과 파두 음악, 에그 타르트로 유명합니다.", spots:["벨렘 탑","제로니무스 수도원","알파마 구시가지","상 조르제 성"] },
+      { name:"더블린", region:"EUROPE", lat:53.3498, lng:-6.2603, flight:"약 13시간", timeDiff:"-9시간 (서머타임 -8시간)", intro:"아일랜드의 수도로 조이스, 버나드 쇼 등 문학 거장들의 고향. 기네스 맥주의 본고장이며 아이리시 펍 문화가 살아 있습니다.", spots:["기네스 스토어하우스","트리니티 칼리지 & 켈스의 서","템플 바 지구","더블린 성"] },
+      { name:"바르셀로나", region:"EUROPE", lat:41.3851, lng:2.1734, flight:"약 13시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"스페인 카탈루냐 지방의 중심 도시. 가우디의 건축 예술과 지중해의 해변, 활기찬 람블라스 거리가 어우러진 매혹적인 도시입니다.", spots:["사그라다 파밀리아","파르크 구엘","람블라스 거리","고딕 지구"] },
+      { name:"밀라노", region:"EUROPE", lat:45.4654, lng:9.1859, flight:"약 12시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"이탈리아 북부의 경제 수도이자 세계 패션과 디자인의 중심지. 레오나르도 다빈치의 '최후의 만찬'이 있는 도시입니다.", spots:["두오모 대성당","레오나르도의 최후의 만찬","갈레리아 비토리오 에마누엘레","브레라 미술관"] },
+      { name:"뮌헨", region:"EUROPE", lat:48.1351, lng:11.5820, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"독일 바이에른 주의 주도로 맥주와 옥토버페스트로 유명합니다. 알프스 근교에 위치하며 노이슈반슈타인 성 방문의 거점입니다.", spots:["마리엔 광장 & 신시청사","영국 정원","독일 박물관","님펜부르크 궁전"] },
+      { name:"함부르크", region:"EUROPE", lat:53.5511, lng:9.9937, flight:"약 11시간", timeDiff:"-8시간 (서머타임 -7시간)", intro:"독일 제2의 도시이자 유럽 최대 항구도시 중 하나. 엘베강을 따라 붉은 벽돌 창고 지구가 유네스코 세계유산으로 등재되어 있습니다.", spots:["슈파이허슈타트 창고지구","미니아투어 분더란트","레퍼반","함부르크 항구"] },
+
+      { name:"뉴욕", region:"AMERICAS", lat:40.7128, lng:-74.0060, flight:"약 14시간", timeDiff:"-13시간 (서머타임 -14시간)", intro:"세계의 수도라 불리는 미국 최대 도시. 맨해튼의 스카이라인, 브로드웨이 뮤지컬, 세계 최고의 박물관들이 모인 꿈의 도시입니다.", spots:["자유의 여신상","센트럴 파크","타임스 스퀘어","메트로폴리탄 미술관"] },
+      { name:"로스앤젤레스", region:"AMERICAS", lat:34.0522, lng:-118.2437, flight:"약 11시간 (직항)", timeDiff:"-16시간 (서머타임 -17시간)", intro:"미국 서부 최대 도시이자 할리우드 영화산업의 본고장. 1년 내내 온화한 기후와 해변, 연예인 문화로 세계적인 관광지입니다.", spots:["할리우드 사인","그리피스 천문대","산타모니카 해변","게티 센터"] },
+      { name:"시카고", region:"AMERICAS", lat:41.8781, lng:-87.6298, flight:"약 13시간", timeDiff:"-14시간 (서머타임 -15시간)", intro:"미국 중서부의 대도시로 '바람의 도시'라는 별명을 가졌습니다. 세계 최초의 마천루가 탄생한 곳으로 독특한 건축 문화로 유명합니다.", spots:["밀레니엄 파크 & 클라우드 게이트","시카고 강 건축 투어","네이비 피어","시카고 미술관"] },
+      { name:"휴스턴", region:"AMERICAS", lat:29.7604, lng:-95.3698, flight:"약 15시간", timeDiff:"-14시간 (서머타임 -15시간)", intro:"텍사스 주 최대 도시이자 미국 우주산업의 중심지. NASA 존슨 우주센터가 위치하며 세계에서 가장 다양한 레스토랑 씬을 자랑합니다.", spots:["NASA 존슨 우주센터","휴스턴 미술관","갤러리아 쇼핑몰","미드타운 지구"] },
+      { name:"샌프란시스코", region:"AMERICAS", lat:37.7749, lng:-122.4194, flight:"약 10시간 30분", timeDiff:"-16시간 (서머타임 -17시간)", intro:"실리콘밸리의 관문 도시로 IT 혁신의 중심지. 금문교, 케이블카, 알카트라즈 섬이 유명하며 아름다운 베이 풍경을 자랑합니다.", spots:["금문교","알카트라즈 섬","피어 39","케이블카 탑승"] },
+      { name:"시애틀", region:"AMERICAS", lat:47.6062, lng:-122.3321, flight:"약 9시간 30분", timeDiff:"-16시간 (서머타임 -17시간)", intro:"워싱턴 주의 최대 도시이자 스타벅스, 아마존, 마이크로소프트의 본고장. 퓨젓 사운드 만과 레이니어 산을 배경으로 한 아름다운 도시입니다.", spots:["스페이스 니들","파이크 플레이스 마켓","스타벅스 1호점","뮤직 익스피리언스 박물관"] },
+      { name:"보스턴", region:"AMERICAS", lat:42.3601, lng:-71.0589, flight:"약 14시간", timeDiff:"-13시간 (서머타임 -14시간)", intro:"미국에서 가장 역사적인 도시 중 하나로 미국 독립혁명의 발상지. 하버드와 MIT가 위치한 미국 최고의 교육 도시입니다.", spots:["프리덤 트레일","하버드 대학교","퀸시 마켓","보스턴 미술관"] },
+      { name:"워싱턴 D.C.", region:"AMERICAS", lat:38.9072, lng:-77.0369, flight:"약 14시간", timeDiff:"-13시간 (서머타임 -14시간)", intro:"미국의 수도로 대통령 집무실 백악관과 의사당이 위치합니다. 스미스소니언 소속 박물관들이 모두 무료로 운영됩니다.", spots:["링컨 기념관 & 내셔널 몰","백악관","스미스소니언 항공우주 박물관","워싱턴 기념탑"] },
+      { name:"마이애미", region:"AMERICAS", lat:25.7617, lng:-80.1918, flight:"약 17시간", timeDiff:"-13시간 (서머타임 -14시간)", intro:"미국 최남단의 해변 도시로 라틴 문화와 아르데코 건축으로 유명합니다. 남미와 카리브해를 연결하는 관문 도시입니다.", spots:["사우스 비치","아르데코 지구","에버글레이즈 국립공원","위인우드 아트 디스트릭트"] },
+      { name:"라스베이거스", region:"AMERICAS", lat:36.1699, lng:-115.1398, flight:"약 10시간 30분", timeDiff:"-16시간 (서머타임 -17시간)", intro:"네바다 사막 한가운데 세워진 세계 최대의 엔터테인먼트 도시. 화려한 카지노와 쇼, 세계 최고급 레스토랑이 밤낮없이 운영됩니다.", spots:["라스베이거스 스트립","프리몬트 스트리트","그랜드 캐니언 (근교)","벨라지오 분수"] },
+      { name:"오클라호마시티", region:"AMERICAS", lat:35.4676, lng:-97.5164, flight:"약 14시간 (경유)", timeDiff:"-14시간 (서머타임 -15시간)", intro:"미국 오클라호마 주의 주도로 카우보이 문화와 미국 서부 개척 역사의 중심지. 1889년 랜드런으로 하룻밤 만에 탄생한 도시입니다.", spots:["OKC 국립기념관","카우보이 & 서부 유산 박물관","브릭타운 수로","무스코지 크릭 국립박물관"] },
+      { name:"에드몬드", region:"AMERICAS", lat:35.6528, lng:-97.4781, flight:"약 14시간 (경유)", timeDiff:"-14시간 (서머타임 -15시간)", intro:"오클라호마시티 바로 북쪽에 위치한 안전하고 쾌적한 전원 도시. 미국 중서부 특유의 여유로운 라이프스타일과 친근한 커뮤니티 문화를 경험할 수 있습니다.", spots:["에드몬드 역사박물관","센트럴 파크","에드몬드 파머스마켓","루트 66 역사지구 (근교)"] },
+      { name:"토론토", region:"AMERICAS", lat:43.6510, lng:-79.3470, flight:"약 14시간", timeDiff:"-13시간 (서머타임 -14시간)", intro:"캐나다 최대 도시이자 세계에서 가장 다문화적인 도시 중 하나. CN 타워가 상징이며 나이아가라 폭포 방문의 거점입니다.", spots:["CN 타워","나이아가라 폭포 (근교)","로열 온타리오 박물관","키징턴 마켓"] },
+      { name:"밴쿠버", region:"AMERICAS", lat:49.2827, lng:-123.1207, flight:"약 9시간 30분", timeDiff:"-16시간 (서머타임 -17시간)", intro:"캐나다 서부의 항구 도시로 산과 바다가 어우러진 자연경관으로 유명합니다. 세계에서 가장 살기 좋은 도시 순위에 매년 이름을 올립니다.", spots:["스탠리 파크","그랜빌 아일랜드","카필라노 협곡 출렁다리","휘슬러 스키장 (근교)"] },
+      { name:"몬트리올", region:"AMERICAS", lat:45.5017, lng:-73.5673, flight:"약 14시간", timeDiff:"-13시간 (서머타임 -14시간)", intro:"캐나다 퀘벡 주의 최대 도시로 북미 최대의 프랑스어권 도시. 유럽풍 구시가지와 세계 수준의 재즈 페스티벌로 유명합니다.", spots:["몽루아얄 공원","올드 몬트리올","노트르담 대성당","생 로랑 거리"] },
+      { name:"멕시코시티", region:"AMERICAS", lat:19.4326, lng:-99.1332, flight:"약 17시간 (경유)", timeDiff:"-14시간 (서머타임 -15시간)", intro:"멕시코의 수도이자 북미 최대 도시 중 하나. 아즈텍 문명의 유산 위에 세워진 도시로 유네스코 세계유산 역사 중심지를 보유합니다.", spots:["소칼로 광장 & 메트로폴리탄 대성당","테오티우아칸 피라미드","국립인류학 박물관","차풀테펙 성"] },
+      { name:"상파울루", region:"AMERICAS", lat:-23.5505, lng:-46.6333, flight:"약 26시간 (경유)", timeDiff:"-12시간", intro:"남미 최대 도시이자 브라질의 경제 수도. 세계 최대의 일본인 이민자 커뮤니티가 있으며 다채로운 음식 문화와 현대 미술로 유명합니다.", spots:["이비라푸에라 공원","파울리스타 대로","리베르다데 (일본인 거리)","피나코테카 미술관"] },
+      { name:"리우데자네이루", region:"AMERICAS", lat:-22.9068, lng:-43.1729, flight:"약 26시간 (경유)", timeDiff:"-12시간", intro:"브라질의 전 수도이자 세계에서 가장 아름다운 도시 중 하나. 코파카바나 해변, 예수상, 삼바 카니발로 전 세계에 알려진 도시입니다.", spots:["코르코바도 산 예수상","코파카바나 비치","슈가로프 산","이파네마 비치"] },
+      { name:"부에노스아이레스", region:"AMERICAS", lat:-34.6037, lng:-58.3816, flight:"약 27시간 (경유)", timeDiff:"-12시간", intro:"아르헨티나의 수도이자 '남미의 파리'로 불리는 도시. 탱고의 발상지이며 유럽풍 건축과 활기찬 문화 씬으로 유명합니다.", spots:["라 보카 (카미니토)","레콜레타 공동묘지","플로리다 거리","오벨리스코"] },
+      { name:"산티아고", region:"AMERICAS", lat:-33.4489, lng:-70.6693, flight:"약 20시간 (경유)", timeDiff:"-13시간", intro:"칠레의 수도로 안데스 산맥을 배경으로 한 현대적인 도시. 와인 생산지와 파타고니아 탐험의 출발지로 유명합니다.", spots:["산 크리스토발 언덕","아르마스 광장","라 치카나 벼룩시장","벨라비스타 지구"] },
+      { name:"보고타", region:"AMERICAS", lat:4.7110, lng:-74.0721, flight:"약 20시간 (경유)", timeDiff:"-14시간", intro:"콜롬비아의 수도로 해발 2,600m에 위치한 고산 도시. 풍부한 역사와 현대적인 미술 씬, 그리고 세계 최고 품질의 커피로 유명합니다.", spots:["골드 뮤지엄","라 칸델라리아 구시가지","몬세라테 산","시파키라 소금 성당 (근교)"] },
+      { name:"리마", region:"AMERICAS", lat:-12.0464, lng:-77.0428, flight:"약 21시간 (경유)", timeDiff:"-14시간", intro:"페루의 수도이자 남미 미식의 중심지. 태평양을 바라보는 절벽 위에 세워진 도시로 잉카 문명의 마추픽추 탐험의 거점입니다.", spots:["마추픽추 (쿠스코 경유)","라르코 박물관","미라플로레스 지구","바리오 차이노"] },
+      { name:"카라카스", region:"AMERICAS", lat:10.4806, lng:-66.9036, flight:"약 22시간 (경유)", timeDiff:"-13시간", intro:"베네수엘라의 수도로 아빌라 산을 배경으로 한 카리브해 연안 도시. 시몬 볼리바르의 탄생지이며 남미 독립운동의 역사를 품고 있습니다.", spots:["국립 판테온","시몬 볼리바르 생가","베네수엘라 미술관","동부 공원"] },
+      { name:"하바나", region:"AMERICAS", lat:23.1136, lng:-82.3666, flight:"약 21시간 (경유)", timeDiff:"-13시간", intro:"쿠바의 수도로 스페인 식민지 시대의 건축이 완벽하게 보존된 도시. 클래식 올드카, 살사 음악, 체 게바라의 혁명 유산이 공존합니다.", spots:["아바나 비에하 (구시가지)","말레콘 해변도로","레볼루시온 광장","혁명박물관"] },
+
+      { name:"카이로", region:"AFRICA", lat:30.0444, lng:31.2357, flight:"약 12시간", timeDiff:"-7시간", intro:"이집트의 수도이자 아프리카 최대 도시. 5,000년 고대 문명의 유산인 피라미드와 스핑크스가 도시 외곽에 위치합니다.", spots:["기자 피라미드 & 스핑크스","이집트 국립박물관","칸 엘 칼릴리 바자르","알-아즈하르 모스크"] },
+      { name:"라고스", region:"AFRICA", lat:6.5244, lng:3.3792, flight:"약 14시간 (경유)", timeDiff:"-8시간", intro:"나이지리아 최대 도시이자 아프리카 최대 도시 중 하나. 아프로비트 음악과 놀리우드 영화의 본고장입니다.", spots:["나이지리아 국립박물관","라고스 아일랜드","이코이 공원","빅토리아 아일랜드"] },
+      { name:"요하네스버그", region:"AFRICA", lat:-26.2041, lng:28.0473, flight:"약 13시간", timeDiff:"-7시간", intro:"남아프리카공화국 최대 도시이자 경제 수도. 넬슨 만델라의 아파르트헤이트 저항 역사를 기억하는 곳입니다.", spots:["아파르트헤이트 박물관","소웨토 타운십 투어","빌라카지 스트리트","금광 박물관"] },
+      { name:"케이프타운", region:"AFRICA", lat:-33.9249, lng:18.4241, flight:"약 14시간", timeDiff:"-7시간", intro:"남아프리카공화국의 입법 수도이자 테이블 마운틴을 배경으로 한 아름다운 항구 도시. 넬슨 만델라가 수감됐던 로벤 섬이 근처에 있습니다.", spots:["테이블 마운틴","케이프 오브 굿 호프","로벤 섬","보카프 말레이 쿼터"] },
+      { name:"나이로비", region:"AFRICA", lat:-1.2921, lng:36.8219, flight:"약 11시간", timeDiff:"-6시간", intro:"케냐의 수도이자 동아프리카의 중심 도시. 도심에서 불과 10km 떨어진 곳에 국립공원이 있어 사자와 기린을 볼 수 있는 독특한 도시입니다.", spots:["나이로비 국립공원","기린 센터","다비드 셸드릭 야생동물 신탁","마사이 마라 (근교)"] },
+      { name:"아디스아바바", region:"AFRICA", lat:9.0320, lng:38.7469, flight:"약 10시간", timeDiff:"-6시간", intro:"에티오피아의 수도이자 아프리카 연합 본부가 위치한 외교 도시. 세계에서 가장 오래된 커피 문화의 본고장입니다.", spots:["에티오피아 국립박물관","성삼위일체 대성당","메르카토 시장","엔토토 산"] },
+      { name:"카사블랑카", region:"AFRICA", lat:33.5731, lng:-7.5898, flight:"약 14시간 (경유)", timeDiff:"-9시간", intro:"모로코 최대 도시이자 경제 수도. 세계에서 세 번째로 큰 모스크인 하산 2세 모스크로 유명하며 지중해와 대서양 문화가 교차합니다.", spots:["하산 2세 모스크","코니쉬 해안도로","올드 메디나","아랍 리그 공원"] },
+      { name:"아크라", region:"AFRICA", lat:5.6037, lng:-0.1870, flight:"약 15시간 (경유)", timeDiff:"-9시간", intro:"가나의 수도이자 서아프리카의 주요 도시. 노예 무역의 슬픈 역사를 간직한 해안 요새들과 활기찬 아프리카 문화가 공존합니다.", spots:["국립박물관","마코라 시장","케이프 코스트 성 (근교)","이스트 레곤 지구"] },
+      { name:"다르에스살람", region:"AFRICA", lat:-6.7924, lng:39.2083, flight:"약 12시간 (경유)", timeDiff:"-6시간", intro:"탄자니아 최대 도시이자 경제 수도. 잔지바르 섬 방문과 킬리만자로 등반, 세렝게티 사파리의 거점 도시입니다.", spots:["빌리지 박물관","카리아쿠 시장","잔지바르 섬 (선박 이동)","세렝게티 (근교)"] },
+      { name:"루안다", region:"AFRICA", lat:-8.8390, lng:13.2894, flight:"약 14시간 (경유)", timeDiff:"-8시간", intro:"앙골라의 수도이자 대서양 연안의 항구 도시. 포르투갈 식민지 시대의 유산과 급속히 발전하는 현대적 인프라가 공존합니다.", spots:["마르짐 해변도로","요새 박물관","퀼롱보 킬로안보 마켓","앙골라 국립박물관"] },
+      { name:"키가리", region:"AFRICA", lat:-1.9441, lng:30.0619, flight:"약 12시간 (경유)", timeDiff:"-7시간", intro:"르완다의 수도로 1994년 제노사이드의 비극을 딛고 아프리카에서 가장 깨끗하고 안전한 도시로 재건된 곳입니다.", spots:["키가리 제노사이드 기념관","키부 호수","르완다 예술 박물관","마운틴 고릴라 트레킹 (비룽가)"] },
+      { name:"아비장", region:"AFRICA", lat:5.3600, lng:-4.0083, flight:"약 14시간 (경유)", timeDiff:"-9시간", intro:"코트디부아르의 경제 수도이자 서아프리카 최대 도시 중 하나. 아프리카에서 가장 역동적인 도시 중 하나로 현대적인 건축과 활기찬 문화를 자랑합니다.", spots:["세인트 폴 대성당","아비장 국립박물관","코코디 지구","마르쉐 드 코코디"] },
+
+      { name:"시드니", region:"OCEANIA", lat:-33.8688, lng:151.2093, flight:"약 10시간", timeDiff:"+2시간 (서머타임 +3시간)", intro:"호주 최대 도시이자 오세아니아의 관문. 오페라 하우스와 하버 브리지가 상징이며 세계에서 가장 아름다운 항구 도시 중 하나입니다.", spots:["시드니 오페라 하우스","하버 브리지","본다이 비치","블루 마운틴 (근교)"] },
+      { name:"멜버른", region:"OCEANIA", lat:-37.8136, lng:144.9631, flight:"약 10시간", timeDiff:"+2시간 (서머타임 +3시간)", intro:"호주 제2의 도시이자 문화·예술·카페의 도시. 세계에서 가장 살기 좋은 도시 순위에 지속적으로 선정됩니다.", spots:["페더레이션 스퀘어","그레이트 오션 로드 (근교)","퀸 빅토리아 마켓","피츠로이 예술 지구"] },
+      { name:"브리즈번", region:"OCEANIA", lat:-27.4698, lng:153.0251, flight:"약 9시간", timeDiff:"+1시간", intro:"퀸즐랜드 주의 주도이자 호주 제3의 도시. 세계적인 휴양지 골드 코스트와 그레이트 배리어 리프 탐험의 거점 도시입니다.", spots:["사우스 뱅크 공원","스토리 브리지","론 파인 코알라 보호구역","골드 코스트 (근교)"] },
+      { name:"퍼스", region:"OCEANIA", lat:-31.9505, lng:115.8605, flight:"약 8시간", timeDiff:"-1시간", intro:"서호주의 주도로 세계에서 가장 외진 대도시 중 하나. 광활한 인도양 해변과 유니크한 야생동물, 풍요로운 와인 산지로 유명합니다.", spots:["킹스 파크","로트네스트 섬 (쿼카 서식지)","프리맨틀 항구 지구","피너클스 사막 (근교)"] },
+      { name:"오클랜드", region:"OCEANIA", lat:-36.8509, lng:174.7645, flight:"약 11시간", timeDiff:"+4시간 (서머타임 +3시간)", intro:"뉴질랜드 최대 도시이자 태평양의 관문. '항해의 도시'로 불리며 두 개의 항구 사이에 위치한 독특한 지형과 마오리 문화가 매력적입니다.", spots:["스카이 타워","웨이테마타 항구","와이헤케 섬","오클랜드 전쟁 기념 박물관"] },
+      { name:"웰링턴", region:"OCEANIA", lat:-41.2866, lng:174.7756, flight:"약 12시간", timeDiff:"+4시간 (서머타임 +3시간)", intro:"뉴질랜드의 수도이자 '바람의 도시'. '반지의 제왕' 촬영지이며 세계 최고 수준의 박물관 테 파파를 무료로 운영합니다.", spots:["테 파파 국립박물관","마운트 빅토리아 전망대","쿡 스트레이트","와이라라파 와인 산지 (근교)"] },
     ];
 
     let map = null;
     let marker = null;
 
+    function showCityInfo(city) {
+      document.getElementById('infoFlight').textContent = city.flight;
+      document.getElementById('infoTimeDiff').textContent = city.timeDiff;
+      document.getElementById('infoIntro').textContent = city.intro;
+      const icons = ["🏛️","🌿","🎡","🗿"];
+      document.getElementById('spotsGrid').innerHTML = city.spots.map((s, i) =>
+        `<div class="spot"><span class="spot-icon">${icons[i]}</span>${s}</div>`
+      ).join('');
+      document.getElementById('infoCard').style.display = 'block';
+    }
+
     function showMap(city) {
       const mapEl = document.getElementById('map');
       mapEl.style.display = 'block';
-
       if (!map) {
         map = L.map('map').setView([city.lat, city.lng], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -329,13 +435,11 @@
       } else {
         map.setView([city.lat, city.lng], 10);
       }
-
       if (marker) marker.remove();
       marker = L.marker([city.lat, city.lng])
         .addTo(map)
         .bindPopup(`<b>${city.name}</b><br>${city.region}`)
         .openPopup();
-
       setTimeout(() => map.invalidateSize(), 100);
     }
 
@@ -345,23 +449,20 @@
 
     function pickOne() {
       const city = getRandom(1)[0];
-
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('multiSection').style.display = 'none';
-
       const nameEl = document.getElementById('cityName');
       const regionEl = document.getElementById('cityRegion');
       nameEl.style.display = 'none';
       regionEl.style.display = 'none';
-
       requestAnimationFrame(() => {
         nameEl.textContent = city.name;
         regionEl.textContent = city.region;
         nameEl.style.display = '';
         regionEl.style.display = '';
       });
-
       showMap(city);
+      showCityInfo(city);
     }
 
     function pickFive() {
@@ -369,13 +470,20 @@
       document.getElementById('cityName').style.display = 'none';
       document.getElementById('cityRegion').style.display = 'none';
       document.getElementById('map').style.display = 'none';
-
+      document.getElementById('infoCard').style.display = 'none';
       const cities = getRandom(5);
       const tagsEl = document.getElementById('tags');
-      tagsEl.innerHTML = cities.map((c, i) =>
-        `<div class="tag" onclick="showMap(CITIES.find(x=>x.name==='${c.name}'))">${c.name} <span style="opacity:0.4;font-size:0.75rem">${c.region}</span></div>`
+      tagsEl.innerHTML = cities.map(c =>
+        `<div class="tag" onclick="selectCity('${c.name}')">${c.name} <span style="opacity:0.4;font-size:0.75rem">${c.region}</span></div>`
       ).join('');
       document.getElementById('multiSection').style.display = 'block';
+    }
+
+    function selectCity(name) {
+      const city = CITIES.find(c => c.name === name);
+      if (!city) return;
+      showMap(city);
+      showCityInfo(city);
     }
 
     const starsEl = document.getElementById('stars');

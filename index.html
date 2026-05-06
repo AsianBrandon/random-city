@@ -501,6 +501,11 @@
       <div class="multi-title">RANDOM PICKS — 클릭하면 지도에서 확인</div>
       <div class="tags" id="tags"></div>
     </div>
+
+    <div class="btn-group" id="bottomBtnGroup" style="display:none; margin-top:30px">
+      <button class="btn" onclick="pickOne()">🎲 도시 1개 뽑기</button>
+      <button class="btn secondary" onclick="pickFive()">🗺️ 도시 5개 뽑기</button>
+    </div>
   </div>
 
   <script>
@@ -927,6 +932,7 @@
         `<div class="spot"><span class="spot-icon">${icons[i]}</span>${s}</div>`
       ).join('');
       document.getElementById('infoCard').style.display = 'block';
+      document.getElementById('bottomBtnGroup').style.display = 'flex';
       fetchWeather(city.lat, city.lng);
       showProsCons(city.name);
     }

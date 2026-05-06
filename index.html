@@ -267,77 +267,56 @@
       gap: 8px;
     }
 
-    .music-card {
+    .pros-cons-section {
       margin-top: 20px;
-      background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(96,165,250,0.08));
-      border: 1px solid rgba(167,139,250,0.25);
-      border-radius: 16px;
-      padding: 18px 20px;
     }
 
-    .music-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .pros-cons-title {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      opacity: 0.4;
       margin-bottom: 12px;
     }
 
-    .music-label {
-      font-size: 0.75rem;
-      letter-spacing: 2px;
-      opacity: 0.5;
+    .pros-cons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
-    .music-genre {
-      font-size: 0.78rem;
-      opacity: 0.45;
-      background: rgba(255,255,255,0.06);
-      padding: 3px 10px;
-      border-radius: 20px;
+    .pros-col, .cons-col {
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 14px;
     }
 
-    .music-controls {
+    .pros-col { border-top: 2px solid rgba(52,211,153,0.5); }
+    .cons-col { border-top: 2px solid rgba(248,113,113,0.5); }
+
+    .col-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .pros-col .col-label { color: #34d399; }
+    .cons-col .col-label { color: #f87171; }
+
+    .pros-cons-list {
+      list-style: none;
       display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .play-btn {
-      background: linear-gradient(135deg, #7c3aed, #2563eb);
-      border: none;
-      color: white;
-      padding: 10px 22px;
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 7px;
     }
 
-    .play-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
-
-    .yt-link {
-      color: rgba(255,255,255,0.45);
-      font-size: 0.78rem;
-      text-decoration: none;
+    .pros-cons-list li {
+      font-size: 0.82rem;
+      opacity: 0.78;
+      line-height: 1.4;
+      padding-left: 4px;
       display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: color 0.2s;
-    }
-
-    .yt-link:hover { color: rgba(255,255,255,0.8); }
-
-    #musicIframe {
-      display: none;
-      width: 100%;
-      height: 80px;
-      border-radius: 10px;
-      border: none;
-      margin-top: 10px;
+      gap: 6px;
     }
 
     .outfit-card {
@@ -489,18 +468,6 @@
         </div>
       </div>
       <div class="info-intro" id="infoIntro"></div>
-      <div class="music-card" id="musicCard" style="display:none">
-        <div class="music-header">
-          <span class="music-label">🎵 도시의 음악</span>
-          <span class="music-genre" id="musicGenre"></span>
-        </div>
-        <div class="music-controls">
-          <button class="play-btn" id="playBtn" onclick="toggleMusic()">▶ 재생</button>
-          <a class="yt-link" id="ytSearchLink" href="#" target="_blank">YouTube에서 더 찾기 ↗</a>
-        </div>
-        <iframe id="musicIframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      </div>
-
       <div class="outfit-card" id="outfitCard" style="display:none">
         <div class="outfit-title">👗 체감온도 기준 오늘의 옷차림</div>
         <div class="outfit-display">
@@ -514,6 +481,20 @@
 
       <div class="spots-title" style="margin-top:20px">📍 주요 관광지</div>
       <div class="spots-grid" id="spotsGrid"></div>
+
+      <div class="pros-cons-section" id="prosConsSection" style="display:none">
+        <div class="pros-cons-title">👍👎 장단점</div>
+        <div class="pros-cons-grid">
+          <div class="pros-col">
+            <div class="col-label">👍 좋은 점</div>
+            <ul class="pros-cons-list" id="prosList"></ul>
+          </div>
+          <div class="cons-col">
+            <div class="col-label">👎 아쉬운 점</div>
+            <ul class="pros-cons-list" id="consList"></ul>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="multi-section" id="multiSection" style="display:none">
@@ -629,61 +610,111 @@
     let map = null;
     let marker = null;
 
-    // 도시별 / 지역별 YouTube 음악 매핑
-    const CITY_MUSIC = {
-      '서울':    { id: 'v7IQfMrV618', genre: '한국 카페 재즈' },
-      '도쿄':    { id: 'lTRiuFIWV54', genre: '일본 시티팝' },
-      '파리':    { id: 'C5bTp39FGAM', genre: '프렌치 카페' },
-      '뉴욕':    { id: '5yx6BWlEVcY', genre: '뉴욕 재즈' },
-      '런던':    { id: 'jAAzM8_KVSU', genre: '브리티시 앰비언트' },
-      '두바이':  { id: 'h9tEJ3fVZrM', genre: '아라비안 앰비언트' },
-      '뭄바이':  { id: 'XqZsoesa55w', genre: '볼리우드 앰비언트' },
-      '방콕':    { id: '5W4KCF70pVo', genre: '타이 앰비언트' },
-      '카이로':  { id: 'EcEbwjuPMzM', genre: '아랍 전통음악' },
-      '시드니':  { id: 'DWcJFNfaw9c', genre: '오세아니아 앰비언트' },
+    const CITY_PROS_CONS = {
+      '서울':    { pros:['대중교통 세계 최고 수준','치안 안전하고 24시간 도시','맛집·쇼핑·문화 인프라 풍부'], cons:['미세먼지·대기오염 심각','물가와 주거비 지속 상승','빠른 생활 속도와 경쟁 문화'] },
+      '수원':    { pros:['서울 근교 접근성 우수','서울보다 물가 저렴','유네스코 세계유산 수원화성'], cons:['관광 인프라 서울보다 부족','볼거리·즐길거리 제한적','서울 의존도 높음'] },
+      '도쿄':    { pros:['치안 세계 최고 수준','음식 수준 세계 최상급','대중교통 정확하고 편리'], cons:['물가·숙박비 비쌈','영어 소통이 어려움','지진 위험 상존'] },
+      '베이징':  { pros:['풍부한 역사 유적','물가 상대적으로 저렴','음식 다양하고 맛있음'], cons:['대기오염 심각','인터넷 규제 (VPN 필요)','관광지 바가지 주의'] },
+      '상하이':  { pros:['현대적 인프라와 국제적 분위기','쇼핑·미식 천국','외국인 생활 편리'], cons:['물가 중국 내 최고 수준','여름 폭염과 습도','인터넷 규제 (VPN 필요)'] },
+      '홍콩':    { pros:['세계 최고 야경','음식·쇼핑 수준 높음','아시아 허브로 접근성 우수'], cons:['물가·임대료 세계 최고','정치적 불안정','좁고 복잡한 도시 환경'] },
+      '싱가포르':{ pros:['안전하고 매우 깨끗함','영어 소통 편리','다양한 음식 문화'], cons:['물가 아시아 최고 수준','여름 내내 극심한 더위와 습도','엄격한 법규와 규제'] },
+      '방콕':    { pros:['물가 저렴','음식 맛있고 다양','교통 인프라 잘 갖춰짐'], cons:['극심한 교통 체증','열대성 더위와 높은 습도','대기오염 심각'] },
+      '자카르타':{ pros:['물가 저렴','음식 다양하고 저렴','활기찬 도시 문화'], cons:['세계 최악의 교통 체증','대기오염 심각','지반 침하와 침수 위험'] },
+      '쿠알라룸푸르':{ pros:['영어 소통 편리','물가 합리적','다민족 음식 문화 풍부'], cons:['열대성 더위와 습도','교통 체증','갑작스런 스콜(폭우)'] },
+      '마닐라':  { pros:['영어 소통 편리','물가 저렴','현지인 친근하고 친절'], cons:['교통 체증 심각','치안 불안 지역 존재','대기오염'] },
+      '하노이':  { pros:['물가 매우 저렴','음식 맛있음','역사적 분위기'], cons:['오토바이 극심한 혼잡','소매치기 주의 필요','인프라 미흡'] },
+      '호치민':  { pros:['활기찬 도시 에너지','음식 다양하고 저렴','경제 성장 빠름'], cons:['오토바이 사고 위험','더위와 습도','소매치기 주의'] },
+      '뭄바이':  { pros:['볼리우드·문화 체험','다양한 음식','활기찬 분위기'], cons:['교통 혼잡 극심','빈부격차 매우 심각','더위와 몬순 우기'] },
+      '델리':    { pros:['풍부한 역사 유적','물가 저렴','다양한 음식'], cons:['대기오염 세계 최악 수준','교통 혼잡','소매치기·사기 주의'] },
+      '카라치':  { pros:['물가 저렴','음식 다양','항구도시 문화'], cons:['치안 불안','대기오염','인프라 노후화'] },
+      '다카':    { pros:['물가 매우 저렴','친근한 현지인','풍부한 현지 문화'], cons:['극심한 교통 체증','대기오염 심각','인프라 부족'] },
+      '콜롬보':  { pros:['물가 저렴','아름다운 해안','친절한 현지인'], cons:['교통 인프라 미흡','더위와 습도','관광 인프라 한정적'] },
+      '카트만두':{ pros:['히말라야 트레킹 거점','독특한 문화·종교 체험','물가 저렴'], cons:['대기오염 심각','인프라 낙후','지진 위험'] },
+      '테헤란':  { pros:['풍부한 역사·문화','현지인 매우 친절','물가 저렴'], cons:['서방 여행객 입국 제한','인터넷 규제','음주 불가'] },
+      '바그다드':{ pros:['메소포타미아 역사 유적','현지인 환대 문화','저렴한 물가'], cons:['치안 불안','관광 인프라 부족','정치적 불안정'] },
+      '리야드':  { pros:['최첨단 현대 인프라','안전','사막 체험'], cons:['여름 극심한 폭염','음주 불가','관광 인프라 제한적'] },
+      '두바이':  { pros:['최첨단 시설과 쇼핑 천국','안전','세계 최고 럭셔리 경험'], cons:['여름 50°C 폭염','물가 매우 비쌈','음주 규제 있음'] },
+      '이스탄불':{ pros:['풍부한 역사·문화','음식 훌륭','물가 비교적 합리적'], cons:['관광지 바가지 주의','교통 혼잡','환율 변동 심함'] },
+      '앙카라':  { pros:['물가 이스탄불보다 저렴','역사 유적','현지인 친근'], cons:['관광 인프라 부족','영어 소통 어려움','볼거리 한정'] },
+      '예루살렘':{ pros:['세계 3대 종교 성지','독보적 역사 체험','다양한 문화'], cons:['종교·정치적 긴장 상존','물가 비쌈','더운 기후'] },
+      '타슈켄트':{ pros:['실크로드 역사 체험','물가 저렴','이슬람 건축 아름다움'], cons:['관광 인프라 부족','더운 여름','영어 소통 어려움'] },
+      '알마티':  { pros:['자연경관 아름다움','물가 합리적','중앙아시아 허브'], cons:['극심한 겨울 추위','교통 인프라 한정','영어 소통 어려움'] },
+      '런던':    { pros:['세계 최고 박물관 무료 관람','영어권 도시','다양한 문화와 음식'], cons:['물가 유럽 최고 수준','날씨 흐리고 비 잦음','지하철 요금 비쌈'] },
+      '파리':    { pros:['세계적인 예술·미식·패션','아름다운 건축과 거리','낭만적인 분위기'], cons:['소매치기 빈번','청결도 낮은 지역 존재','물가 비쌈'] },
+      '베를린':  { pros:['물가 유럽 주요도시 中 저렴','역동적인 예술·클럽 문화','역사적 의미 깊음'], cons:['흐리고 추운 날씨','영어 소통 제한적 지역','겨울 일조량 부족'] },
+      '마드리드':{ pros:['세계적 미술관 집중','음식 맛있고 다양','활기찬 야간 문화'], cons:['소매치기 주의','한낮 폭염 (여름)','물가 상승 중'] },
+      '로마':    { pros:['걸어서 역사 유적 관람','음식 맛있음','날씨 온화'], cons:['소매치기 주의 필수','대중교통 불편','여름 극심한 더위'] },
+      '암스테르담':{ pros:['운하 아름다움','자유롭고 개방적인 분위기','대중교통 편리'], cons:['물가 비쌈','자전거 도로 조심','관광객 과밀'] },
+      '브뤼셀':  { pros:['초콜릿·맥주·와플 천국','EU 본부 위치','물가 파리보다 저렴'], cons:['날씨 흐리고 비 잦음','관광지 집중도 낮음','안전 주의 지역 존재'] },
+      '빈':      { pros:['클래식 음악·문화 최고','안전하고 쾌적','카페 문화'], cons:['물가 비쌈','일부 보수적 분위기','영업시간 짧음'] },
+      '취리히':  { pros:['세계 최고 수준의 삶의 질','안전','아름다운 자연환경'], cons:['물가 세계 최고 수준','다소 조용하고 딱딱한 분위기','영업시간 짧음'] },
+      '제네바':  { pros:['국제도시로 영어 소통 편리','아름다운 레만 호수','안전'], cons:['물가 취리히와 함께 세계 최고','작은 도시','다소 조용함'] },
+      '스톡홀름':{ pros:['아름다운 군도와 수상도시','안전하고 깨끗','높은 삶의 질'], cons:['물가 북유럽 최고 수준','겨울 일조량 극히 부족','영어 가능하나 사교성 낮음'] },
+      '오슬로':  { pros:['피오르 자연경관','안전하고 복지 최고','뭉크·에드바르 그리그 문화'], cons:['물가 세계 최고 수준','겨울 극심한 추위','일조량 부족'] },
+      '코펜하겐':{ pros:['지속 가능 도시 모델','안전하고 깨끗','자전거 친화적'], cons:['물가 매우 비쌈','날씨 흐리고 쌀쌀','영어 가능하나 물가 체감 높음'] },
+      '헬싱키':  { pros:['안전하고 깨끗','북유럽 디자인 체험','사우나 문화'], cons:['물가 비쌈','겨울 극심한 추위','관광 인프라 단순'] },
+      '바르샤바':{ pros:['물가 서유럽보다 저렴','역사적 의미 깊음','음식 맛있음'], cons:['날씨 흐리고 추운 편','영어 소통 세대 차이 있음','볼거리 제한적'] },
+      '프라하':  { pros:['아름다운 중세 건축','물가 서유럽보다 저렴','맥주 저렴'], cons:['관광객 과밀로 혼잡','소매치기 주의','일부 지역 관광객 바가지'] },
+      '부다페스트':{ pros:['온천 체험','아름다운 다뉴브 야경','물가 저렴'], cons:['일부 지역 치안 주의','대중교통 낡음','겨울 추위'] },
+      '부쿠레슈티':{ pros:['물가 유럽 최저 수준','활기찬 나이트라이프','역사 건축 흥미로움'], cons:['인프라 낙후','일부 지역 치안 주의','교통 혼잡'] },
+      '소피아':  { pros:['물가 매우 저렴','아름다운 대성당','자연 접근성 좋음'], cons:['관광 인프라 부족','영어 소통 제한적','대중교통 불편'] },
+      '아테네':  { pros:['서양 문명 발상지 체험','음식 맛있음','날씨 좋음'], cons:['경제 불안 영향','소매치기 주의','여름 극심한 더위'] },
+      '리스본':  { pros:['날씨 좋고 온화','물가 서유럽 저렴 편','독특한 노란 트램·파두 문화'], cons:['가파른 언덕 이동 불편','최근 물가 급등','대중교통 노후화'] },
+      '더블린':  { pros:['영어권 도시','아이리시 펍 문화','친근한 현지인'], cons:['물가 유럽 최고 수준','날씨 흐리고 비 잦음','주거비 급등'] },
+      '바르셀로나':{ pros:['가우디 건축 독보적','날씨 좋고 해변 있음','음식 맛있음'], cons:['소매치기 스페인 최다','여름 관광객 과밀','물가 상승 중'] },
+      '밀라노':  { pros:['세계 패션·디자인 중심','음식 맛있음','북이탈리아 문화'], cons:['물가 이탈리아 최고','볼거리가 로마보다 적음','패션 쇼핑 매우 비쌈'] },
+      '뮌헨':    { pros:['안전하고 깨끗','맥주·음식 맛있음','알프스 접근성 좋음'], cons:['물가 독일 내 최고','여름 관광 성수기 혼잡','겨울 추위'] },
+      '함부르크':{ pros:['항구 도시 특유의 문화','물가 뮌헨보다 저렴','비틀즈 역사 흔적'], cons:['날씨 흐리고 비 잦음','관광지 다소 분산','겨울 바람 강함'] },
+      '뉴욕':    { pros:['세계의 중심, 모든 것이 있음','24시간 도시','다양한 문화·음식'], cons:['물가·숙박비 세계 최고급','지하철 낡고 불안','노숙자 문제 심각'] },
+      '로스앤젤레스':{ pros:['1년 내내 화창한 날씨','엔터테인먼트 중심','다양한 음식 문화'], cons:['차 없이 이동 거의 불가능','물가·주거비 매우 비쌈','노숙자·치안 문제'] },
+      '시카고':  { pros:['뉴욕보다 물가 저렴','독특한 건축 문화','음식 맛있음'], cons:['겨울 혹한과 강풍','일부 지역 치안 불안','여름-겨울 기온차 극심'] },
+      '휴스턴':  { pros:['우주·에너지 산업 중심','다양한 레스토랑','물가 합리적'], cons:['차 중심 도시 (대중교통 부족)','폭염과 허리케인 위험','볼거리 분산'] },
+      '샌프란시스코':{ pros:['IT 혁신의 중심','온화한 기후','아름다운 경관'], cons:['물가·주거비 세계 최고 수준','노숙자 문제 심각','안개와 바람'] },
+      '시애틀':  { pros:['자연경관 아름다움','IT·커피 문화','온화한 기후'], cons:['연중 비와 흐린 날씨','물가·주거비 상승 중','교통 체증'] },
+      '보스턴':  { pros:['미국 최고 교육 도시','역사 깊음','안전한 편'], cons:['물가 비쌈','겨울 혹한과 폭설','주차·교통 불편'] },
+      '워싱턴 D.C.':{ pros:['박물관 무료 관람','역사·정치 체험','안전한 편'], cons:['여름 폭염과 습도','숙박비 비쌈','관광지 이외 볼거리 한정'] },
+      '마이애미':{ pros:['아름다운 해변','라틴 문화 체험','날씨 좋음'], cons:['여름 폭염과 허리케인','물가 비쌈','교통 체증'] },
+      '라스베이거스':{ pros:['엔터테인먼트 무한','그랜드캐니언 근접','호텔 가성비 좋을 때 있음'], cons:['사막의 극한 여름 더위','도박 중독 환경','자연환경 전무'] },
+      '오클라호마시티':{ pros:['물가 미국 내 저렴','친근한 커뮤니티','카우보이 문화 체험'], cons:['토네이도 위험','관광 인프라 부족','대중교통 거의 없음'] },
+      '에드몬드':{ pros:['안전하고 조용한 주거 환경','물가 저렴','깨끗한 도시'], cons:['관광 명소 거의 없음','대중교통 없음','차 없이 생활 불가'] },
+      '토론토':  { pros:['안전하고 다문화 도시','캐나다 최고 인프라','나이아가라 근접'], cons:['물가·주거비 비쌈','겨울 혹한','여름-겨울 기온차 극심'] },
+      '밴쿠버':  { pros:['자연경관 세계 최고급','안전하고 깨끗','아시아 음식 풍부'], cons:['주거비·물가 캐나다 최고','비와 안개 잦음','겨울 햇빛 부족'] },
+      '몬트리올':{ pros:['프랑스 문화 체험','물가 캐나다 내 저렴','재즈 페스티벌'], cons:['겨울 혹한과 폭설','프랑스어 중심으로 소통 불편','여름 짧음'] },
+      '멕시코시티':{ pros:['풍부한 문화·역사','음식 맛있음 (세계 최고급)','물가 저렴'], cons:['해발 2,200m 고산병','대기오염','일부 지역 치안 불안'] },
+      '상파울루':{ pros:['남미 최고 미식 도시','다문화 체험','경제 기회'], cons:['치안 불안 심각','극심한 교통 체증','빈부격차 극심'] },
+      '리우데자네이루':{ pros:['세계 최고 해변','카니발 체험','아름다운 자연'], cons:['치안 불안 (파벨라)','여름 폭염','소매치기 주의 필수'] },
+      '부에노스아이레스':{ pros:['유럽 분위기 물씬','음식 맛있고 물가 저렴','탱고 문화'], cons:['경제 불안·인플레이션','치안 불안 지역','환전 주의 필요'] },
+      '산티아고': { pros:['남미 중 안전한 편','자연 접근성 우수','물가 비교적 합리적'], cons:['대기오염','주거비 상승','볼거리 분산'] },
+      '보고타':  { pros:['고산 도시 특유의 선선한 날씨','세계 최고 커피','문화 씬 활발'], cons:['일부 지역 치안 불안','고도 2,600m 적응 필요','교통 혼잡'] },
+      '리마':    { pros:['세계 최고 수준 미식','마추픽추 거점','물가 저렴'], cons:['1년 내내 안개·흐린 날씨','치안 불안 지역','교통 혼잡'] },
+      '카라카스': { pros:['풍부한 자연환경','저렴한 물가','활기찬 문화'], cons:['치안 매우 불안','경제 위기','관광 인프라 낙후'] },
+      '하바나':  { pros:['독특한 시간이 멈춘 분위기','올드카 문화 체험','음악·살사 문화'], cons:['인터넷 및 인프라 매우 부족','관광객 물가 이중 적용','이동 및 결제 불편'] },
+      '카이로':  { pros:['고대 이집트 유적 세계 최고','물가 저렴','활기찬 바자르 문화'], cons:['대기오염·교통 혼잡','소매치기·바가지 주의','여름 극심한 더위'] },
+      '라고스':  { pros:['아프리카 최고 경제 도시','아프로비트 음악 본고장','활기찬 문화'], cons:['교통 체증 극심','치안 불안','인프라 부족'] },
+      '요하네스버그':{ pros:['아파르트헤이트 역사 체험','경제 인프라 발전','다양한 음식'], cons:['치안 불안 심각','빈부격차 극심','관광 시 반드시 가이드 필요'] },
+      '케이프타운':{ pros:['아름다운 자연 경관','테이블 마운틴','와이너리'], cons:['치안 불안 지역 존재','물 부족 문제','겨울 바람 강함'] },
+      '나이로비': { pros:['사파리 거점 도시','야생동물 근접 체험 가능','활기찬 도시 문화'], cons:['교통 체증','치안 주의 필요','말라리아 예방 필요'] },
+      '아디스아바바':{ pros:['커피 발원지 체험','물가 매우 저렴','에티오피아 고유 문화'], cons:['인프라 낙후','대기오염','고도 2,355m 고산병 주의'] },
+      '카사블랑카':{ pros:['하산 2세 모스크 경이로움','지중해 문화','물가 합리적'], cons:['관광 인프라 마라케시보다 부족','교통 혼잡','일부 지역 소매치기'] },
+      '아크라':  { pros:['서아프리카 중 안전한 편','영어 소통 가능','친근한 현지인'], cons:['인프라 부족','더위와 습도','관광 인프라 제한적'] },
+      '다르에스살람':{ pros:['잔지바르·사파리 거점','물가 저렴','해안 아름다움'], cons:['인프라 낙후','더위와 습도','말라리아 예방 필요'] },
+      '루안다':  { pros:['빠른 경제 성장','대서양 해안 아름다움','포르투갈 문화 흔적'], cons:['물가 아프리카 최고 수준','인프라 불균형','비자 취득 복잡'] },
+      '키가리':  { pros:['아프리카에서 가장 안전하고 깨끗','마운틴 고릴라 트레킹','놀라운 재건 스토리'], cons:['관광 비용 비쌈 (고릴라 퍼밋 비쌈)','인프라 제한적','볼거리 한정'] },
+      '아비장':  { pros:['서아프리카 경제 허브','현대적 인프라','코코아·커피 문화'], cons:['교통 혼잡','치안 주의 지역','더위와 습도'] },
+      '시드니':  { pros:['아름다운 항구와 해변','깨끗하고 안전','영어권 도시'], cons:['물가·주거비 매우 비쌈','서울에서 비행 10시간 이상','자외선 매우 강함'] },
+      '멜버른':  { pros:['카페 문화 세계적 수준','다문화 도시','살기 좋은 도시 상위권'], cons:['물가 비쌈','날씨 변덕 심함','주거비 높음'] },
+      '브리즈번': { pros:['날씨 좋음','골드코스트 근접','물가 시드니보다 저렴'], cons:['볼거리 시드니보다 적음','여름 폭염','대중교통 한계'] },
+      '퍼스':    { pros:['자연환경 아름다움','상대적으로 저렴','쿼카 등 독특한 야생동물'], cons:['호주 내에서도 외진 위치','여름 폭염','이동 거리 멀음'] },
+      '오클랜드': { pros:['자연경관 아름다움','마오리 문화 체험','안전'], cons:['물가·주거비 뉴질랜드 최고','날씨 변덕','관광 외 볼거리 한정'] },
+      '웰링턴':  { pros:['뉴질랜드 문화 수도','반지의 제왕 촬영지','바람 있는 독특한 분위기'], cons:['연중 강풍','물가 비쌈','작은 도시'] },
     };
 
-    const REGION_MUSIC = {
-      'ASIA':     { id: 'jfKfPfyJRdk', genre: '아시안 로파이' },
-      'EUROPE':   { id: 'MVPTGNGiI-4', genre: '유러피안 카페' },
-      'AMERICAS': { id: 'rUxyKA_-grg', genre: '재즈 & 보사노바' },
-      'AFRICA':   { id: 'YvgqcgwTmgk', genre: '아프리칸 월드뮤직' },
-      'OCEANIA':  { id: 'DWcJFNfaw9c', genre: '오세아니아 앰비언트' },
-    };
-
-    let currentCityName = '';
-    let musicPlaying = false;
-
-    function showMusic(city) {
-      currentCityName = city.name;
-      musicPlaying = false;
-      const music = CITY_MUSIC[city.name] || REGION_MUSIC[city.region] || REGION_MUSIC['ASIA'];
-      document.getElementById('musicGenre').textContent = music.genre;
-      document.getElementById('ytSearchLink').href =
-        `https://www.youtube.com/results?search_query=${encodeURIComponent(city.name + ' ambient music')}`;
-      document.getElementById('musicIframe').style.display = 'none';
-      document.getElementById('musicIframe').src = '';
-      document.getElementById('playBtn').textContent = '▶ 재생';
-      document.getElementById('musicCard').style.display = 'block';
-      // music 정보를 버튼에 저장
-      document.getElementById('playBtn').dataset.videoId = music.id;
-    }
-
-    function toggleMusic() {
-      const btn = document.getElementById('playBtn');
-      const iframe = document.getElementById('musicIframe');
-      const videoId = btn.dataset.videoId;
-      if (!musicPlaying) {
-        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
-        iframe.style.display = 'block';
-        btn.textContent = '⏹ 정지';
-        musicPlaying = true;
-      } else {
-        iframe.src = '';
-        iframe.style.display = 'none';
-        btn.textContent = '▶ 재생';
-        musicPlaying = false;
-      }
+    function showProsCons(cityName) {
+      const data = CITY_PROS_CONS[cityName];
+      if (!data) { document.getElementById('prosConsSection').style.display = 'none'; return; }
+      document.getElementById('prosList').innerHTML = data.pros.map(p => `<li><span>✅</span>${p}</li>`).join('');
+      document.getElementById('consList').innerHTML = data.cons.map(c => `<li><span>❌</span>${c}</li>`).join('');
+      document.getElementById('prosConsSection').style.display = 'block';
     }
 
     function getOutfitInfo(temp) {
@@ -897,7 +928,7 @@
       ).join('');
       document.getElementById('infoCard').style.display = 'block';
       fetchWeather(city.lat, city.lng);
-      showMusic(city);
+      showProsCons(city.name);
     }
 
     function showMap(city) {
@@ -949,9 +980,6 @@
       document.getElementById('infoCard').style.display = 'none';
       document.getElementById('outfitCard').style.display = 'none';
       if (window._timeInterval) clearInterval(window._timeInterval);
-      const iframe = document.getElementById('musicIframe');
-      if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
-      musicPlaying = false;
       const cities = getRandom(5);
       const tagsEl = document.getElementById('tags');
       tagsEl.innerHTML = cities.map(c =>

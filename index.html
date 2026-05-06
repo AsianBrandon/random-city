@@ -162,6 +162,53 @@
       animation: fadeUp 0.5s ease;
     }
 
+    .weather-card {
+      background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(52,211,153,0.1));
+      border: 1px solid rgba(96,165,250,0.25);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .weather-title {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      opacity: 0.5;
+      margin-bottom: 14px;
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .weather-item {
+      text-align: center;
+    }
+
+    .weather-icon { font-size: 1.6rem; margin-bottom: 4px; }
+
+    .weather-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #60a5fa;
+    }
+
+    .weather-label {
+      font-size: 0.7rem;
+      opacity: 0.45;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .weather-loading {
+      text-align: center;
+      opacity: 0.4;
+      font-size: 0.9rem;
+      padding: 10px 0;
+    }
+
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -285,6 +332,28 @@
     <div id="map"></div>
 
     <div class="info-card" id="infoCard">
+      <div class="weather-card">
+        <div class="weather-title">🌤️ 현재 날씨 (실시간)</div>
+        <div id="weatherLoading" class="weather-loading">날씨 정보를 불러오는 중...</div>
+        <div class="weather-grid" id="weatherGrid" style="display:none">
+          <div class="weather-item">
+            <div class="weather-icon">🌡️</div>
+            <div class="weather-value" id="wTemp">--</div>
+            <div class="weather-label">현재 온도</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-icon">💧</div>
+            <div class="weather-value" id="wHumidity">--</div>
+            <div class="weather-label">상대습도</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-icon">🤔</div>
+            <div class="weather-value" id="wFeelsLike">--</div>
+            <div class="weather-label">체감온도</div>
+          </div>
+        </div>
+        <div id="weatherError" style="display:none; text-align:center; opacity:0.4; font-size:0.85rem; padding:8px 0;">날씨 정보를 불러올 수 없습니다</div>
+      </div>
       <div class="info-grid">
         <div class="info-item">
           <div class="info-label">✈️ 한국에서 비행시간</div>
@@ -413,6 +482,29 @@
     let map = null;
     let marker = null;
 
+    async function fetchWeather(lat, lng) {
+      document.getElementById('weatherLoading').style.display = 'block';
+      document.getElementById('weatherGrid').style.display = 'none';
+      document.getElementById('weatherError').style.display = 'none';
+
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature&timezone=auto`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const c = data.current;
+
+        document.getElementById('wTemp').textContent = `${Math.round(c.temperature_2m)}°C`;
+        document.getElementById('wHumidity').textContent = `${c.relative_humidity_2m}%`;
+        document.getElementById('wFeelsLike').textContent = `${Math.round(c.apparent_temperature)}°C`;
+
+        document.getElementById('weatherLoading').style.display = 'none';
+        document.getElementById('weatherGrid').style.display = 'grid';
+      } catch (e) {
+        document.getElementById('weatherLoading').style.display = 'none';
+        document.getElementById('weatherError').style.display = 'block';
+      }
+    }
+
     function showCityInfo(city) {
       document.getElementById('infoFlight').textContent = city.flight;
       document.getElementById('infoTimeDiff').textContent = city.timeDiff;
@@ -422,6 +514,7 @@
         `<div class="spot"><span class="spot-icon">${icons[i]}</span>${s}</div>`
       ).join('');
       document.getElementById('infoCard').style.display = 'block';
+      fetchWeather(city.lat, city.lng);
     }
 
     function showMap(city) {

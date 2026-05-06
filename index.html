@@ -410,8 +410,9 @@
           <div class="info-value" id="infoFlight"></div>
         </div>
         <div class="info-item">
-          <div class="info-label">🕐 한국과의 시차</div>
-          <div class="info-value" id="infoTimeDiff"></div>
+          <div class="info-label">🕐 현지 시간 & 시차</div>
+          <div class="info-value" id="infoLocalTime">--:--</div>
+          <div style="font-size:0.8rem;opacity:0.5;margin-top:5px" id="infoTimeDiff"></div>
         </div>
       </div>
       <div class="info-intro" id="infoIntro"></div>
@@ -712,6 +713,32 @@
         document.getElementById('weatherLoading').style.display = 'none';
         document.getElementById('weatherGrid').style.display = 'grid';
         showOutfit(feelsLike);
+
+        // 현지 시간 실시간 표시
+        const tz = data.timezone;
+        if (window._timeInterval) clearInterval(window._timeInterval);
+        function updateLocalTime() {
+          const now = new Date();
+          const localTime = now.toLocaleTimeString('ko-KR', {
+            timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+          });
+          const localDate = now.toLocaleDateString('ko-KR', {
+            timeZone: tz, month: 'long', day: 'numeric', weekday: 'short'
+          });
+          document.getElementById('infoLocalTime').textContent = localTime;
+          document.getElementById('infoLocalTime').title = localDate;
+
+          // 한국(KST)과의 시차 계산
+          const krOffset = 9 * 60;
+          const localOffset = -new Date().toLocaleString('en', { timeZone: tz, timeZoneName: 'shortOffset' })
+            .split('GMT')[1]?.split(':')
+            .reduce((h, m, i) => i === 0 ? parseInt(h) * 60 : parseInt(h) + parseInt(m), 0) || 0;
+          const fmt = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName: 'shortOffset' });
+          const tzName = fmt.formatToParts(now).find(p => p.type === 'timeZoneName')?.value || '';
+          document.getElementById('infoTimeDiff').textContent = `${tzName} · 한국과의 시차: ${data.utc_offset_seconds >= 0 ? '+' : ''}${Math.round(data.utc_offset_seconds / 3600 - 9)}시간`;
+        }
+        updateLocalTime();
+        window._timeInterval = setInterval(updateLocalTime, 1000);
       } catch (e) {
         document.getElementById('weatherLoading').style.display = 'none';
         document.getElementById('weatherError').style.display = 'block';

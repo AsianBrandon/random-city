@@ -267,6 +267,79 @@
       gap: 8px;
     }
 
+    .music-card {
+      margin-top: 20px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(96,165,250,0.08));
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 16px;
+      padding: 18px 20px;
+    }
+
+    .music-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .music-label {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      opacity: 0.5;
+    }
+
+    .music-genre {
+      font-size: 0.78rem;
+      opacity: 0.45;
+      background: rgba(255,255,255,0.06);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .music-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .play-btn {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      border: none;
+      color: white;
+      padding: 10px 22px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .play-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+
+    .yt-link {
+      color: rgba(255,255,255,0.45);
+      font-size: 0.78rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s;
+    }
+
+    .yt-link:hover { color: rgba(255,255,255,0.8); }
+
+    #musicIframe {
+      display: none;
+      width: 100%;
+      height: 80px;
+      border-radius: 10px;
+      border: none;
+      margin-top: 10px;
+    }
+
     .outfit-card {
       margin-top: 20px;
       background: rgba(255,255,255,0.04);
@@ -416,6 +489,18 @@
         </div>
       </div>
       <div class="info-intro" id="infoIntro"></div>
+      <div class="music-card" id="musicCard" style="display:none">
+        <div class="music-header">
+          <span class="music-label">🎵 도시의 음악</span>
+          <span class="music-genre" id="musicGenre"></span>
+        </div>
+        <div class="music-controls">
+          <button class="play-btn" id="playBtn" onclick="toggleMusic()">▶ 재생</button>
+          <a class="yt-link" id="ytSearchLink" href="#" target="_blank">YouTube에서 더 찾기 ↗</a>
+        </div>
+        <iframe id="musicIframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+
       <div class="outfit-card" id="outfitCard" style="display:none">
         <div class="outfit-title">👗 체감온도 기준 오늘의 옷차림</div>
         <div class="outfit-display">
@@ -543,6 +628,63 @@
 
     let map = null;
     let marker = null;
+
+    // 도시별 / 지역별 YouTube 음악 매핑
+    const CITY_MUSIC = {
+      '서울':    { id: 'v7IQfMrV618', genre: '한국 카페 재즈' },
+      '도쿄':    { id: 'lTRiuFIWV54', genre: '일본 시티팝' },
+      '파리':    { id: 'C5bTp39FGAM', genre: '프렌치 카페' },
+      '뉴욕':    { id: '5yx6BWlEVcY', genre: '뉴욕 재즈' },
+      '런던':    { id: 'jAAzM8_KVSU', genre: '브리티시 앰비언트' },
+      '두바이':  { id: 'h9tEJ3fVZrM', genre: '아라비안 앰비언트' },
+      '뭄바이':  { id: 'XqZsoesa55w', genre: '볼리우드 앰비언트' },
+      '방콕':    { id: '5W4KCF70pVo', genre: '타이 앰비언트' },
+      '카이로':  { id: 'EcEbwjuPMzM', genre: '아랍 전통음악' },
+      '시드니':  { id: 'DWcJFNfaw9c', genre: '오세아니아 앰비언트' },
+    };
+
+    const REGION_MUSIC = {
+      'ASIA':     { id: 'jfKfPfyJRdk', genre: '아시안 로파이' },
+      'EUROPE':   { id: 'MVPTGNGiI-4', genre: '유러피안 카페' },
+      'AMERICAS': { id: 'rUxyKA_-grg', genre: '재즈 & 보사노바' },
+      'AFRICA':   { id: 'YvgqcgwTmgk', genre: '아프리칸 월드뮤직' },
+      'OCEANIA':  { id: 'DWcJFNfaw9c', genre: '오세아니아 앰비언트' },
+    };
+
+    let currentCityName = '';
+    let musicPlaying = false;
+
+    function showMusic(city) {
+      currentCityName = city.name;
+      musicPlaying = false;
+      const music = CITY_MUSIC[city.name] || REGION_MUSIC[city.region] || REGION_MUSIC['ASIA'];
+      document.getElementById('musicGenre').textContent = music.genre;
+      document.getElementById('ytSearchLink').href =
+        `https://www.youtube.com/results?search_query=${encodeURIComponent(city.name + ' ambient music')}`;
+      document.getElementById('musicIframe').style.display = 'none';
+      document.getElementById('musicIframe').src = '';
+      document.getElementById('playBtn').textContent = '▶ 재생';
+      document.getElementById('musicCard').style.display = 'block';
+      // music 정보를 버튼에 저장
+      document.getElementById('playBtn').dataset.videoId = music.id;
+    }
+
+    function toggleMusic() {
+      const btn = document.getElementById('playBtn');
+      const iframe = document.getElementById('musicIframe');
+      const videoId = btn.dataset.videoId;
+      if (!musicPlaying) {
+        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+        iframe.style.display = 'block';
+        btn.textContent = '⏹ 정지';
+        musicPlaying = true;
+      } else {
+        iframe.src = '';
+        iframe.style.display = 'none';
+        btn.textContent = '▶ 재생';
+        musicPlaying = false;
+      }
+    }
 
     function getOutfitInfo(temp) {
       const S = '#FDDCB5', H = '#2D1B0E';
@@ -755,6 +897,7 @@
       ).join('');
       document.getElementById('infoCard').style.display = 'block';
       fetchWeather(city.lat, city.lng);
+      showMusic(city);
     }
 
     function showMap(city) {
@@ -805,6 +948,10 @@
       document.getElementById('map').style.display = 'none';
       document.getElementById('infoCard').style.display = 'none';
       document.getElementById('outfitCard').style.display = 'none';
+      if (window._timeInterval) clearInterval(window._timeInterval);
+      const iframe = document.getElementById('musicIframe');
+      if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
+      musicPlaying = false;
       const cities = getRandom(5);
       const tagsEl = document.getElementById('tags');
       tagsEl.innerHTML = cities.map(c =>

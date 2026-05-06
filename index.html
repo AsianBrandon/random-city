@@ -961,6 +961,7 @@
     }
 
     function pickOne() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       const city = getRandom(1)[0];
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('multiSection').style.display = 'none';
@@ -979,6 +980,7 @@
     }
 
     function pickFive() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('cityName').style.display = 'none';
       document.getElementById('cityRegion').style.display = 'none';
